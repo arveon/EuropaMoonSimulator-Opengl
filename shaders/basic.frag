@@ -25,7 +25,7 @@ void main()
 	
 	//specular
 	vec3 normalised_vert = normalize(-fposition.xyz);
-	vec3 reflection = reflect(-to_light, normalised_vert);
+	vec3 reflection = reflect(-to_light, fnormal);
 	vec4 specular = pow(max(dot(reflection, normalised_vert), 0), shininess) * fspecular;
 
 	float attenuation = 1;
