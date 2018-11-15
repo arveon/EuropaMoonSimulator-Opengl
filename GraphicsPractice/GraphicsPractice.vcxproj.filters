@@ -42,6 +42,9 @@
     <ClCompile Include="Lightsource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLManager.h">
@@ -55,12 +58,6 @@
     </ClInclude>
     <ClInclude Include="Drawable.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Square.h">
-      <Filter>Header Files\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Triangle.h">
-      <Filter>Header Files\Objects</Filter>
     </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
@@ -77,6 +74,9 @@
     <ClInclude Include="Lightsource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\basic.frag">
@@ -89,6 +89,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\shaders\lightsource.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\unlit_textured.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\unlit_textured.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

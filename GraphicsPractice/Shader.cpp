@@ -1,3 +1,5 @@
+/* by Aleksejs Loginovs - October 2018 */
+
 #include "Shader.h"
 
 void Shader::init_shader(GLfloat aspect_ratio, int type)
@@ -17,28 +19,28 @@ void Shader::init_shader(GLfloat aspect_ratio, int type)
 
 	if (type == BASIC_SHADER)
 	{
-		//allocate color_mode int and set it to 0
-		color_mode_id = glGetUniformLocation(program, "colour_mode");
-		GLuint mode = 1;
-		glUniform1ui(color_mode_id, mode);
-
 		//allocate shininess uniform and set to 10
 		shininess_uniform_id = glGetUniformLocation(program, "shininess");
 		GLuint shininess = 10;
-		glUniform1ui(shininess_uniform_id, mode);
+		glUniform1ui(shininess_uniform_id, shininess);
 
 		light_position_uniform_id = glGetUniformLocation(program, "light_position");	
 		glm::vec4 pos = glm::vec4(0, 0, 0, 1);
 		glUniform4fv(light_position_uniform_id, 1, &pos[0]);
 
-		//allocate modelview matrix
+		//allocate view matrix
 		view_uniform_id = glGetUniformLocation(program, "view");
 		glm::mat4 model = glm::mat4(1.f);
 		glUniformMatrix4fv(view_uniform_id, 1, GL_FALSE, &model[0][0]);
 
+		texture_enabled_uniform_id = glGetUniformLocation(program, "texture_enabled");
+		glUniform1i(texture_enabled_uniform_id, false);
+
 		attenuation_enabled_uniform_id = glGetUniformLocation(program, "attenuation_enabled");
 		glUniform1i(attenuation_enabled_uniform_id, true);
 	}
+
+
 
 	glUseProgram(0);
 }
@@ -50,17 +52,17 @@ void Shader::set_view_matrix(glm::mat4 view)
 	glUseProgram(0);
 }
 
+void Shader::set_projection_matrix(glm::mat4 proj)
+{
+	glUseProgram(program);
+	glUniformMatrix4fv(projection_uniform_id, 1, GL_FALSE, &proj[0][0]);
+	glUseProgram(0);
+}
+
 void Shader::set_model_view_matrix(glm::mat4 model_view)
 {
 	glUseProgram(program);
 	glUniformMatrix4fv(model_view_uniform_id, 1, GL_FALSE, &model_view[0][0]);
-	glUseProgram(0);
-}
-
-void Shader::set_color_mode(GLuint mode)
-{
-	glUseProgram(program);
-	glUniform1ui(color_mode_id, mode);
 	glUseProgram(0);
 }
 
@@ -82,6 +84,14 @@ void Shader::set_attenuation_enabled(GLboolean enabled)
 {
 	glUseProgram(program);
 	glUniform1i(attenuation_enabled_uniform_id, enabled);
+	glUseProgram(0);
+}
+
+void Shader::set_texture_enabled(GLboolean enabled)
+{
+	glUseProgram(program);
+	glUniform1i(texture_enabled_uniform_id, enabled);
+	glUseProgram(0);
 }
 
 Shader::Shader(GLuint program_id)

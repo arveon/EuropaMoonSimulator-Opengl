@@ -1,3 +1,5 @@
+/* by Aleksejs Loginovs - October 2018 */
+
 #pragma once
 
 #include <GL/glew.h>
@@ -14,6 +16,7 @@
 
 #include "Shader.h"
 
+//Class responsible for loading shaders
 class ShaderManager
 {
 public:

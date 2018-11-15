@@ -1,34 +1,36 @@
+/* by Aleksejs Loginovs - October 2018 */
+
 #include "GLManager.h"
-
-float GLManager::movement_x;
-float GLManager::movement_z;
-float GLManager::rotation_y;
-
-float GLManager::x_pos = 0;
-float GLManager::y_rot = 1;
-float GLManager::z_pos = 0;
 
 glm::vec3 GLManager::light_movement;
 
 GLfloat GLManager::aspect_ratio;
 
-GLuint GLManager::colour_mode;
-GLuint GLManager::sphere_drawmode;
+float GLManager::unaffected_time = 0;
+int GLManager::speed = 300;
+
+Camera GLManager::camera;
 
 bool GLManager::reset = false;
+bool GLManager::close = false;
+bool GLManager::show_cursor = false;
+bool GLManager::attenuation_enabled = true;
+bool GLManager::texture_enabled = true;
 
+glm::vec2 GLManager::cursor_movement;
+
+///Function used to reset the scene (camera,  sun, time speed)
 void GLManager::reset_scene()
 {
-	x_pos = 0;
-	z_pos = -1;
-	y_rot = 0;
-	light.move_to(glm::vec4(0, 0, 0, 1));
+	sun.move_to(glm::vec4(0, 0, 0, 1));
+	camera.reset();
 	reset = false;
+	speed = 300;
 }
 
 GLManager::GLManager()
 {
-	
+	srand(time(0));
 }
 
 
@@ -36,6 +38,7 @@ GLManager::~GLManager()
 {
 }
 
+///Function used to initialise all of the required opengl components and load the required textures
 void GLManager::init()
 {
 	if (!glfwInit())
@@ -43,9 +46,12 @@ void GLManager::init()
 		std::cout << "Failed to init GLFW." << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	
 	win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simplest", NULL, NULL);
 	aspect_ratio = WINDOW_WIDTH / WINDOW_HEIGHT;
 	glfwMakeContextCurrent(win);
+	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	
 
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -53,20 +59,24 @@ void GLManager::init()
 		/* Problem: glewInit failed, something is seriously wrong. */
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 	}
-	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
 	events.set_error_callback(error_callback);
 	events.set_reshape_callback(win, resize_callback);
 	events.set_key_callback(win, key_callback);
+	events.set_cursor_callback(win, cursor_moved_callback);
 
+	//load required shaders
 	try
 	{
 		basic_shader = ShaderManager::load_shader("../shaders/basic.vert", "../shaders/basic.frag");
 		basic_shader.init_shader(aspect_ratio, BASIC_SHADER);
-		basic_shader.set_shininess(20);
+		basic_shader.set_shininess(2);
 
 		lightsource_shader = ShaderManager::load_shader( "../shaders/lightsource.vert","../shaders/lightsource.frag");
 		lightsource_shader.init_shader(aspect_ratio, LIGHTSOURCE_SHADER);
+
+		unlit_texture_shader = ShaderManager::load_shader("../shaders/unlit_textured.vert", "../shaders/unlit_textured.frag");
+		unlit_texture_shader.init_shader(aspect_ratio, LIGHTSOURCE_SHADER);
 	}
 	catch (std::exception e)
 	{
@@ -75,82 +85,99 @@ void GLManager::init()
 		exit(EXIT_FAILURE);
 	}
 
+	//load required textures
+	try
+	{
+		skybox_tex = SOIL_load_OGL_texture("..\\textures\\asteroid1.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+
+		if (skybox_tex == 0)
+			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
+
+		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
+		if (loc >= 0) glUniform1i(loc, 0);
+	}
+	catch (std::exception)
+	{
+		std::cerr << "Couldn't load a texture." << std::endl;
+	}
+
+	//enable depth texting
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 0, 0, 1);
+
+	// Enable face culling. This will cull the back faces of all
+	// triangles. Be careful to ensure that triangles are drawn
+	// with correct winding.
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	init_objects();
 }
 
+///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
-	cube = Cube(basic_shader);
-	sphere = Sphere(basic_shader);
-	/*Sphere sphere2 = Sphere(lightsource_shader);
-	sphere2.makeSphere(NUM_LATS_SPHERE, NUM_LONGS_SPHERE);*/
-	light = Lightsource(lightsource_shader);
-	sphere.makeSphere(NUM_LATS_SPHERE, NUM_LONGS_SPHERE);
+	test.init(basic_shader);
+
+	sun = Lightsource(lightsource_shader);
+	sun.set_scale(glm::vec3( .3f, .3f, .3f));
 }
 
 void GLManager::loop()
 {
+	glfwSetTime(0);
 	while (!glfwWindowShouldClose(win))
 	{
-		render();
+		//calculate time from last tick
+		static float prev_time = 0;
+		unaffected_time = (glfwGetTime() - prev_time);
+		float delta_time = unaffected_time * speed;
+		prev_time = glfwGetTime();
+
+		render(delta_time);
 		glfwSwapBuffers(win);
 		glfwPollEvents();
+
+		if(close == true)
+			glfwSetWindowShouldClose(GLManager::win, GL_TRUE);
 	}
 }
 
-void GLManager::render()
+void GLManager::render(float delta_time)
 {
-	
-	static float angle = .0f;
-	static float rate = 1.f;
-	angle += rate;
-	if (angle > 360)
-		angle = 0;
-	if (y_rot > 360)
-		y_rot = 0;
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	//move camera
-	glm::mat4 view_matrix = glm::lookAt(
-		glm::vec3(0,0,0),
-		glm::vec3(0,0,-4),
-		glm::vec3(0,1,0)
-	);
-	view_matrix = glm::rotate(view_matrix, glm::radians(y_rot), glm::vec3(0, 1, 0));
-	view_matrix = glm::translate(view_matrix, glm::vec3(x_pos, 0, z_pos-3));
-	cube.set_view_matrix(view_matrix);
-	sphere.set_view_matrix(view_matrix);
-	light.set_view_matrix(view_matrix);
 
-	cube.translate(glm::vec3(-.75f, 0, 0));
-	cube.scale(glm::vec3(2, 2, 2));
-	//cube.rotate(glm::radians(angle), glm::vec3(1, 1, 0));
+	camera.update(unaffected_time, cursor_movement);
+	cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
 
-	sphere.translate(glm::vec3(.75f, 0, 0));
-	sphere.scale(glm::vec3(.5, .5, .5));
+	//set projection matrix in all shaders
+	glm::mat4 projection = glm::perspective(glm::radians(12.f), aspect_ratio, 0.1f, 200.f);
+	basic_shader.set_projection_matrix(projection);
+	lightsource_shader.set_projection_matrix(projection);
+	unlit_texture_shader.set_projection_matrix(projection);
 
+	//set view matrix in objects that need it
+	test.set_view_matrix(camera.get_view_matrix());
+	sun.set_view_matrix(camera.get_view_matrix());
 
-	//call draw on all objects
-	cube.draw();
-	sphere.drawSphere(sphere_drawmode);
-	light.draw();
-	//light.get_sphere()->drawSphere(sphere_drawmode);
-	
+	//manipulate and draw other objects
+	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
+	sun.draw();
+	test.draw();
 
-	light.shift(light_movement);
+	//set the light position in lit shader
+	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
 
-	x_pos += movement_x;
-	z_pos += movement_z;
-	y_rot += rotation_y;
-	basic_shader.set_color_mode(colour_mode);
-	basic_shader.set_light_position(light.get_position());
-
+	//apply scene changes if specific flags were set
 	if (reset)
 		reset_scene();
+	if(!show_cursor)
+		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	else
+		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	basic_shader.set_attenuation_enabled(attenuation_enabled);
+	basic_shader.set_texture_enabled(texture_enabled);
 }
 
 void GLManager::terminate()
@@ -173,60 +200,73 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 {
 	if (action == GLFW_PRESS)
 	{
-		//camera position
+		//camera movement
 		if (key_code == GLFW_KEY_W)
-			movement_z = .01f;
+			camera.set_z_mov(1);
 		else if (key_code == GLFW_KEY_S)
-			movement_z = -.01;
+			camera.set_z_mov(-1);
 
 		if (key_code == GLFW_KEY_A)
-			movement_x = .01;
+			camera.set_x_mov(1);
 		else if (key_code == GLFW_KEY_D)
-			movement_x = -.01;
+			camera.set_x_mov(-1);
 
-		//move light around
+		if (key_code == GLFW_KEY_LEFT_CONTROL)
+			camera.set_y_mov(1);
+		else if (key_code == GLFW_KEY_SPACE)
+			camera.set_y_mov(-1);
+
+		//light movement
 		if (key_code == GLFW_KEY_UP)
-			light_movement.z = -.01;
+			light_movement.z = -LIGHT_MOVEMENT_SPEED;
 		else if (key_code == GLFW_KEY_DOWN)
-			light_movement.z = .01;
+			light_movement.z = LIGHT_MOVEMENT_SPEED;
 		if (key_code == GLFW_KEY_RIGHT)
-			light_movement.x = .01;
+			light_movement.x = LIGHT_MOVEMENT_SPEED;
 		else if (key_code == GLFW_KEY_LEFT)
-			light_movement.x = -.01;
+			light_movement.x = -LIGHT_MOVEMENT_SPEED;
 		if (key_code == GLFW_KEY_KP_ADD)
-			light_movement.y = .01;
+			light_movement.y = LIGHT_MOVEMENT_SPEED;
 		else if (key_code == GLFW_KEY_KP_SUBTRACT)
-			light_movement.y = -.01;
-
-		//camera look rotation
-		if (key_code == GLFW_KEY_E)
-			rotation_y = .5;
-		else if (key_code == GLFW_KEY_Q)
-			rotation_y = -.5;
-
-		//color mode
-		if (key_code == GLFW_KEY_0)
-			colour_mode = 0;
-		else if (key_code == GLFW_KEY_1)
-			colour_mode = 1;
+			light_movement.y = -LIGHT_MOVEMENT_SPEED;
 
 		//reset
 		if (key_code == GLFW_KEY_R)
 			reset = true;
 
-		if (key_code == GLFW_KEY_M)
-			sphere_drawmode = (sphere_drawmode > NUM_DRAWMODES) ? 1 : sphere_drawmode+1;
+		//close window
+		if (key_code == GLFW_KEY_ESCAPE)
+			close = true;
+
+		//toggle cursor
+		if (key_code == GLFW_KEY_TAB)
+			show_cursor = !show_cursor;
+
+		//toggle attenuation
+		if (key_code == GLFW_KEY_X)
+			attenuation_enabled = !attenuation_enabled;
+
+		//toggle texture
+		if (key_code == GLFW_KEY_T)
+			texture_enabled = !texture_enabled;
+
+		//time speed changes
+		if (key_code == GLFW_KEY_PERIOD)
+			speed += 30;
+		if (key_code == GLFW_KEY_COMMA)
+			speed -= 30;
 		
 	}
 	else if(action == GLFW_RELEASE)
 	{
+		//reset speeds on key releases
 		if (key_code == GLFW_KEY_W || key_code == GLFW_KEY_S)
-			movement_z = 0;
+			camera.set_z_mov(0);
 		if (key_code == GLFW_KEY_A || key_code == GLFW_KEY_D)
-			movement_x = 0;
+			camera.set_x_mov(0);
 
 		if (key_code == GLFW_KEY_Q || key_code == GLFW_KEY_E)
-			rotation_y = 0;
+			camera.set_y_rot(0);
 
 		if (key_code == GLFW_KEY_RIGHT || key_code == GLFW_KEY_LEFT)
 			light_movement.x = 0;
@@ -235,7 +275,30 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		if (key_code == GLFW_KEY_KP_ADD || key_code == GLFW_KEY_KP_SUBTRACT)
 			light_movement.y = 0;
 
+		if (key_code == GLFW_KEY_LEFT_CONTROL || key_code == GLFW_KEY_SPACE)
+			camera.set_y_mov(0);
 	}
+}
+
+void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double ypos)
+{
+	static int prev_xpos = NULL;
+	static int prev_ypos = NULL;
+
+	if (!show_cursor)//only keep track of cursor movement if its captured by window
+	{
+		if (prev_xpos == NULL)
+		{//safeguard against a jump at the first call, when these values aren't set yet (=> equal to 0)
+			prev_xpos = xpos;
+			prev_ypos = ypos;
+		}
+
+		cursor_movement.x = floor(xpos) - prev_xpos;
+		cursor_movement.y = floor(ypos) - prev_ypos;
+	}
+
+	prev_xpos = floor(xpos);
+	prev_ypos = floor(ypos);
 }
 
 

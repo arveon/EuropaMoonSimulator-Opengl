@@ -1,3 +1,5 @@
+/* by Aleksejs Loginovs - October 2018 */
+
 #pragma once
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
@@ -24,6 +26,11 @@ public:
 	{
 		this->key_callback = f;
 		glfwSetKeyCallback(window, key_callback);
+	}
+
+	void set_cursor_callback(GLFWwindow* window, void(*f)(GLFWwindow* window, double xpos, double ypos))
+	{
+		glfwSetCursorPosCallback(window, f);
 	}
 	
 	EventManager() {}
