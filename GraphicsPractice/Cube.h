@@ -25,7 +25,7 @@ private:
 		-1.0,  1.0, -1.0,
 	};
 
-	GLint indices[NUM_CUBE_INDICES] =
+	GLuint indices[NUM_CUBE_INDICES] =
 	{
 		0,1,2,
 		2,3,0,

@@ -23,6 +23,8 @@
 #include "EventManager.h"
 #include "ShaderManager.h"
 
+#include "ObjectLoader.h"
+
 #include "Cube.h"
 #include "Sphere.h"
 #include "Lightsource.h"
@@ -44,6 +46,8 @@ private:
 	Cube test;
 	
 	Lightsource sun;
+
+	Drawable* monkey;
 
 	static glm::vec2 cursor_movement;
 	static Camera camera;

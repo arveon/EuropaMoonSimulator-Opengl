@@ -131,9 +131,11 @@
     <ClCompile Include="GLManager.cpp" />
     <ClCompile Include="Lightsource.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjectLoader.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="tiny_obj_loader.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -143,9 +145,11 @@
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="GLManager.h" />
     <ClInclude Include="Lightsource.h" />
+    <ClInclude Include="ObjectLoader.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\basic.frag" />

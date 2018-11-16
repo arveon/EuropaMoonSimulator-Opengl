@@ -3,17 +3,22 @@
 #include "Drawable.h"
 
 
-void Drawable::init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLint* indices, int num_indices, GLfloat* normals, GLfloat* texcoords, int tex_id)
+void Drawable::init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals, GLfloat* texcoords, int tex_id)
 {
 	//initialises shader, vertices, colors, normals etc if they are used 
 	this->shader_program = shader_program;
+	init(vertices, num_verts, colours, indices, num_indices, normals, texcoords, tex_id);
+}
+
+void Drawable::init(GLfloat * vertices, int num_verts, GLfloat * colours, GLuint * indices, int num_indices, GLfloat * normals, GLfloat * texcoords, int tex_id)
+{
 	verts = vertices;
 	this->colours = colours;
 	this->normals = normals;
 	this->num_verts = num_verts;
 	this->num_indices = num_indices;
 	this->indices = indices;
-	
+
 	if (tex_id != NULL && texcoords)
 	{
 		tex_enabled = true;
@@ -40,7 +45,7 @@ void Drawable::load_into_memory()
 	//load indices into memory
 	glGenBuffers(1, &index_buffer_id);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint)*num_indices, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*num_indices, indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//load vertex colours into memory
@@ -108,7 +113,6 @@ void Drawable::draw()
 	// Define triangle winding as counter-clockwise
 	glFrontFace(GL_CCW);
 	glPointSize(3.f);
-
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
 	glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
@@ -117,6 +121,7 @@ void Drawable::draw()
 	if (tex_enabled)
 		glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glUseProgram(0);
 
 	//reset the model matrix

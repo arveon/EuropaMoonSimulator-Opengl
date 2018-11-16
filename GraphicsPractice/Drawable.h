@@ -26,7 +26,7 @@ protected:
 	GLfloat *colours = nullptr;
 	GLfloat *normals = nullptr;
 	GLfloat *texture_coords = nullptr;
-	GLint *indices = nullptr;
+	GLuint *indices = nullptr;
 	
 	int num_verts;
 	int num_indices;
@@ -37,10 +37,13 @@ protected:
 	glm::vec3 center_position = glm::vec4(0);
 
 	void load_into_memory();
-	virtual void init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLint* indices, int num_indices, GLfloat* normals = nullptr, GLfloat* texcoords = nullptr, int tex_id = NULL);
 public:
 	Drawable() {};
 	~Drawable();
+	virtual void init(GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals = nullptr, GLfloat* texcoords = nullptr, int tex_id = NULL);
+	virtual void init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals = nullptr, GLfloat* texcoords = nullptr, int tex_id = NULL);
+
+	void set_shader(Shader shader_program) { this->shader_program = shader_program; }
 	
 	bool tex_enabled;
 	bool normals_enabled;

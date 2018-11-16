@@ -258,10 +258,14 @@ void Sphere::drawSphere(int drawmode)
 		}
 		/* Draw the south pole as a triangle fan */
 		glDrawElements(GL_TRIANGLE_FAN, numlongs + 1, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	if(tex_enabled)
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUseProgram(0);
 
 	this->model_matrix = glm::mat4(1.f);

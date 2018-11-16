@@ -117,7 +117,10 @@ void GLManager::init()
 ///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
-	test.init(basic_shader);
+	test.init(lightsource_shader);
+
+	monkey = ObjectLoader::load_object("../models/monkey_normals.obj");
+	monkey->set_shader(basic_shader);
 
 	sun = Lightsource(lightsource_shader);
 	sun.set_scale(glm::vec3( .3f, .3f, .3f));
@@ -157,13 +160,16 @@ void GLManager::render(float delta_time)
 	unlit_texture_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
+	monkey->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
 
 	//manipulate and draw other objects
 	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
+	
+	//test.draw();
+	monkey->draw();
 	sun.draw();
-	test.draw();
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());

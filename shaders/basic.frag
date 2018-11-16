@@ -43,4 +43,5 @@ void main()
 	}
 
 	outputColor = attenuation*texcolor*(diffuse + specular) + texcolor*fambient*fcolour;
+	//outputColor = vec4(distance_to_light);
 }
