@@ -29,6 +29,8 @@
 #include "Sphere.h"
 #include "Lightsource.h"
 
+#include "TerrainGenerator.h"
+
 #include "Camera.h"
 
 class GLManager
@@ -48,6 +50,8 @@ private:
 	Lightsource sun;
 
 	Drawable* monkey;
+
+	TerrainGenerator terrain_gen;
 
 	static glm::vec2 cursor_movement;
 	static Camera camera;

@@ -22,10 +22,10 @@ protected:
 
 	Shader shader_program = NULL;
 
-	GLfloat *verts = nullptr;
-	GLfloat *colours = nullptr;
-	GLfloat *normals = nullptr;
-	GLfloat *texture_coords = nullptr;
+	glm::vec3 *verts = nullptr;
+	glm::vec4 *colours = nullptr;
+	glm::vec3 *normals = nullptr;
+	glm::vec2 *texture_coords = nullptr;
 	GLuint *indices = nullptr;
 	
 	int num_verts;
@@ -40,8 +40,8 @@ protected:
 public:
 	Drawable() {};
 	~Drawable();
-	virtual void init(GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals = nullptr, GLfloat* texcoords = nullptr, int tex_id = NULL);
-	virtual void init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals = nullptr, GLfloat* texcoords = nullptr, int tex_id = NULL);
+	virtual void init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
+	virtual void init(Shader shader_program, glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
 
 	void set_shader(Shader shader_program) { this->shader_program = shader_program; }
 	

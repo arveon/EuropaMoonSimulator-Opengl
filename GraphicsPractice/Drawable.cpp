@@ -3,14 +3,14 @@
 #include "Drawable.h"
 
 
-void Drawable::init(Shader shader_program, GLfloat* vertices, int num_verts, GLfloat* colours, GLuint* indices, int num_indices, GLfloat* normals, GLfloat* texcoords, int tex_id)
+void Drawable::init(Shader shader_program, glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals, glm::vec2* texcoords, int tex_id)
 {
 	//initialises shader, vertices, colors, normals etc if they are used 
 	this->shader_program = shader_program;
 	init(vertices, num_verts, colours, indices, num_indices, normals, texcoords, tex_id);
 }
 
-void Drawable::init(GLfloat * vertices, int num_verts, GLfloat * colours, GLuint * indices, int num_indices, GLfloat * normals, GLfloat * texcoords, int tex_id)
+void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals, glm::vec2* texcoords, int tex_id)
 {
 	verts = vertices;
 	this->colours = colours;
@@ -27,6 +27,11 @@ void Drawable::init(GLfloat * vertices, int num_verts, GLfloat * colours, GLuint
 	}
 
 	load_into_memory();
+
+	for (int i = 0; i < num_indices-2; i+=3)
+		std::cerr << indices[i] << " " << indices[i+1] << " " << indices[i+2] << std::endl;
+
+	std::cerr << "END OF OBJECT" << std::endl;
 }
 
 Drawable::~Drawable()
@@ -39,7 +44,7 @@ void Drawable::load_into_memory()
 {
 	glGenBuffers(1, &vertex_buffer_id);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * VALUES_PER_VERT * num_verts, verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, verts, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//load indices into memory
@@ -53,7 +58,7 @@ void Drawable::load_into_memory()
 	{
 		glGenBuffers(1, &colour_buffer_id);
 		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * VALUES_PER_VERT * num_verts, colours, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * num_verts, colours, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -62,7 +67,7 @@ void Drawable::load_into_memory()
 	{
 		glGenBuffers(1, &normal_buffer_id);
 		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_id);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * VALUES_PER_NORMAL * num_verts, normals, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, normals, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -71,7 +76,7 @@ void Drawable::load_into_memory()
 	{
 		glGenBuffers(1, &tex_coords_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * num_verts, texture_coords, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * num_verts, texture_coords, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
@@ -115,7 +120,7 @@ void Drawable::draw()
 	glPointSize(3.f);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
-	glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
 
 	//unbind everything
 	if (tex_enabled)

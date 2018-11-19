@@ -38,7 +38,7 @@ void main()
 	float attenuation = 1;
 	if(attenuation_enabled)
 	{
-		float k1 = .1;
+		float k1 = .01;
 		attenuation = 1.0 / (k1 + k1*distance_to_light + k1*pow(distance_to_light, 2));
 	}
 

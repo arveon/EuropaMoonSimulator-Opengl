@@ -8,7 +8,7 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 tex_coords;
 
 
-vec4 ambient_colour = vec4(0.1, 0.1, 0.1, 1);
+vec4 ambient_colour = vec4(0.2, 0.2, 0.2, 1);
 vec4 diffuse_colour = vec4(0.3, 0.3, 0.3, 1);
 vec4 specular_colour = vec4(0.5, 0.5, 0.5, 1);
 

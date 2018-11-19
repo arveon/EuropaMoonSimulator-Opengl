@@ -11,18 +11,18 @@ private:
 	const int num_indices = NUM_CUBE_INDICES;
 
 	/* Define vertices for a cube in 12 triangles */
-	GLfloat verts[NUM_CUBE_VERTS*VALUES_PER_VERT] =
+	glm::vec3 verts[NUM_CUBE_VERTS] =
 	{
 		// front
-		-1.0, -1.0,  1.0,
-		 1.0, -1.0,  1.0,
-		 1.0,  1.0,  1.0,
-		-1.0,  1.0,  1.0,
+		glm::vec3(-1.0, -1.0,  1.0),
+		glm::vec3(1.0, -1.0,  1.0),
+		glm::vec3(1.0,  1.0,  1.0),
+		glm::vec3(-1.0,  1.0,  1.0),
 		// back
-		-1.0, -1.0, -1.0,
-		 1.0, -1.0, -1.0,
-		 1.0,  1.0, -1.0,
-		-1.0,  1.0, -1.0,
+		glm::vec3(-1.0, -1.0, -1.0),
+		glm::vec3(1.0, -1.0, -1.0),
+		glm::vec3(1.0,  1.0, -1.0),
+		glm::vec3(-1.0,  1.0, -1.0)
 	};
 
 	GLuint indices[NUM_CUBE_INDICES] =
@@ -46,81 +46,81 @@ private:
 		6,7,3
 	};
 
-	GLfloat colours[NUM_CUBE_VERTS * VALUES_PER_COLOR] =
+	glm::vec4 colours[NUM_CUBE_VERTS] =
 	{
-		1.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
+		glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+		glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),
+		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+		glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
 	};
 
 	/* Manually specified normals for our cube (3 values per coordinate) */
-	GLfloat normals[NUM_CUBE_VERTS * VALUES_PER_NORMAL] =
+	glm::vec3 normals[NUM_CUBE_VERTS] =
 	{
-		0, 0, -1.f,
-		0, 0, -1.f, 
-		0, 0, -1.f,
-		0, 0, -1.f,
-		0, 0, -1.f,
-		0, 0, -1.f,
-		1.f, 0, 0, 
-		1.f, 0, 0
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(0, 0, -1.f),
+		glm::vec3(1.f, 0, 0),
+		glm::vec3(1.f, 0, 0)
 	};
 
-	GLfloat texcoords[NUM_CUBE_INDICES * 2] =
+	glm::vec2 texcoords[NUM_CUBE_INDICES * 2] =
 	{
 		// ace 0 back
-		.25f, 0.66f,
-		0.25f, 0.33f,
-		.5f, .33f,
-		.5f, .33f,
-		0.5f, .66f,
-		.25f, 0.66f,
+		glm::vec2(.25f, 0.66f),
+		glm::vec2(0.25f, 0.33f),
+		glm::vec2(.5f, .33f),
+		glm::vec2(.5f, .33f),
+		glm::vec2(0.5f, .66f),
+		glm::vec2(.25f, 0.66f),
 
 		// ace 1 right
-		.5f, 0.34f,
-		0.75f, 0.34f,
-		.5f, .66f,
-		0.75f, 0.34f,
-		0.75f, .66f,
-		.50f, 0.66f,
+		glm::vec2(.5f, 0.34f),
+		glm::vec2(0.75f, 0.34f),
+		glm::vec2(.5f, .66f),
+		glm::vec2(0.75f, 0.34f),
+		glm::vec2(0.75f, .66f),
+		glm::vec2(.50f, 0.66f),
 
 		// ace 2 front
-		0.75f, .34f,
-		1.f, 0.34f,
-		0.75f, 0.66f,
-		1.f, 0.34f,
-		1.f, .66f,
-		0.75f, 0.66f,
+		glm::vec2(0.75f, .34f),
+		glm::vec2(1.f, 0.34f),
+		glm::vec2(0.75f, 0.66f),
+		glm::vec2(1.f, 0.34f),
+		glm::vec2(1.f, .66f),
+		glm::vec2(0.75f, 0.66f),
 
 		// ace 3 left
-		.0f, 0.34f,
-		0.25f, 0.34f,
-		.0f, .66f,
-		0.25f, 0.34f,
-		0.25f, .66f,
-		.0f, .66f,
+		glm::vec2(.0f, 0.34f),
+		glm::vec2(0.25f, 0.34f),
+		glm::vec2(.0f, .66f),
+		glm::vec2(0.25f, 0.34f),
+		glm::vec2(0.25f, .66f),
+		glm::vec2(.0f, .66f),
 
 		// ace 4 bottom
-		.25f, 0.f,
-		0.50f, 0.0f,
-		.50f, .33f,
-		.50f, .33f,
-		0.25f, .33f,
-		.25f, 0.f,
+		glm::vec2(.25f, 0.f),
+		glm::vec2(0.50f, 0.0f),
+		glm::vec2(.50f, .33f),
+		glm::vec2(.50f, .33f),
+		glm::vec2(0.25f, .33f),
+		glm::vec2(.25f, 0.f),
 		
 		// ace 5 top
-		.25f, 0.66f,
-		0.50f, 0.66f,
-		.50f, 1.f,
-		.50f, 1.f,
-		0.25f, 1.f,
-		.25f, 0.66f,
+		glm::vec2(.25f, 0.66f),
+		glm::vec2(0.50f, 0.66f),
+		glm::vec2(.50f, 1.f),
+		glm::vec2(.50f, 1.f),
+		glm::vec2(0.25f, 1.f),
+		glm::vec2(.25f, 0.66f),
 	};
 
 public:

@@ -10,8 +10,10 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	std::vector<tinyobj::material_t> materials;
 	int num_verts, num_ind, num_normals, num_tex_coords = 0;
 
-	GLfloat *vertices, *normals, *colors, *texcoords;
-	vertices = normals = colors = texcoords = nullptr;
+	glm::vec4 *colors = nullptr;
+	glm::vec3 *vertices, *normals;
+	glm::vec2 *texcoords = nullptr;
+	vertices = normals= nullptr;
 	GLuint *indices = nullptr;
 
 
@@ -35,16 +37,28 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	}
 
 	//copy vertex data to array
-	vertices = new GLfloat[obj.vertices.size()];
-	std::copy(obj.vertices.begin(), obj.vertices.end(), vertices);
+	vertices = new glm::vec3[obj.vertices.size()];
+	//std::copy(obj.vertices.begin(), obj.vertices.end(), vertices);
+	int counter = 0;
+	for (unsigned int i = 0; i < obj.vertices.size(); i+=3)
+	{
+		vertices[counter] = glm::vec3(obj.vertices[i], obj.vertices[i + 1], obj.vertices[i + 2]);
+		counter++;
+	}
+
 
 	//copy stuff if present
 	if (num_normals <= 0)
 		std::cout << "No normals." << std::endl;
 	else
 	{
-		normals = new GLfloat[obj.normals.size()];
-		std::copy(obj.normals.begin(), obj.normals.end(), normals);
+		normals = new glm::vec3[obj.normals.size()];
+		counter = 0;
+		for (unsigned int i = 0; i < obj.normals.size(); i += 3)
+		{
+			normals[counter] = glm::vec3(obj.normals[i], obj.normals[i + 1], obj.normals[i + 2]);
+			counter++;
+		}
 		res->normals_enabled = true;
 	}
 
@@ -52,13 +66,25 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 		std::cout << "No tex coords." << std::endl;
 	else
 	{
-		texcoords = new GLfloat[obj.texcoords.size()];
-		std::copy(obj.texcoords.begin(), obj.texcoords.end(), texcoords);
+		texcoords = new glm::vec2[obj.texcoords.size()];
+		int counter = 0;
+		for (unsigned int i = 0; i < obj.normals.size(); i += 2)
+		{
+			texcoords[counter] = glm::vec2(obj.texcoords[i], obj.texcoords[i + 1]);
+			counter++;
+		}
+
 		res->tex_enabled = true;
 	}
 
-	colors = new GLfloat[obj.colors.size()];
-	std::copy(obj.colors.begin(), obj.colors.end(), colors);
+	colors = new glm::vec4[obj.colors.size()];
+	counter = 0;
+	for (unsigned int i = 0; i < obj.colors.size(); i += 4)
+	{
+		colors[counter] = glm::vec4(obj.colors[i], obj.colors[i + 1], obj.colors[i + 2], obj.colors[i + 3]);
+		counter++;
+	}
+	//std::copy(obj.colors.begin(), obj.colors.end(), colors);
 
 
 	int num_indices;
