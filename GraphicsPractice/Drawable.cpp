@@ -120,10 +120,13 @@ void Drawable::draw()
 	}
 	
 	// Define triangle winding as counter-clockwise
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
 	glPointSize(3.f);
+
+	
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
 
 	//unbind everything

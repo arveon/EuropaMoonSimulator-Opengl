@@ -72,7 +72,7 @@ void GLManager::init()
 	{
 		basic_shader = ShaderManager::load_shader("../shaders/basic.vert", "../shaders/basic.frag");
 		basic_shader.init_shader(aspect_ratio, BASIC_SHADER);
-		basic_shader.set_shininess(2);
+		basic_shader.set_shininess(1);
 
 		lightsource_shader = ShaderManager::load_shader( "../shaders/lightsource.vert","../shaders/lightsource.frag");
 		lightsource_shader.init_shader(aspect_ratio, LIGHTSOURCE_SHADER);
@@ -172,7 +172,7 @@ void GLManager::render(float delta_time)
 
 	//manipulate and draw other objects
 	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
-	monkey->translate(glm::vec3(0,-2,0));
+	monkey->translate(glm::vec3(-10,-5,-10));
 	
 	//test.draw();
 	monkey->draw();
