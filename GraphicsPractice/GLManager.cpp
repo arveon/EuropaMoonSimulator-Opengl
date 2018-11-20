@@ -16,6 +16,8 @@ bool GLManager::close = false;
 bool GLManager::show_cursor = false;
 bool GLManager::attenuation_enabled = true;
 bool GLManager::texture_enabled = true;
+bool GLManager::light_enabled = true;
+bool GLManager::colour_enabled = false;
 
 glm::vec2 GLManager::cursor_movement;
 
@@ -187,8 +189,11 @@ void GLManager::render(float delta_time)
 	else
 		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+
 	basic_shader.set_attenuation_enabled(attenuation_enabled);
 	basic_shader.set_texture_enabled(texture_enabled);
+	basic_shader.set_colour_enabled(colour_enabled);
+	basic_shader.set_lighting_enabled(light_enabled);
 }
 
 void GLManager::terminate()
@@ -252,6 +257,21 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		//toggle cursor
 		if (key_code == GLFW_KEY_TAB)
 			show_cursor = !show_cursor;
+
+		//toggle colour
+		if (key_code == GLFW_KEY_C)
+		{
+			colour_enabled = !colour_enabled;
+			std::cerr << "color: " << colour_enabled << std::endl;
+		}
+
+		//toggle light
+		if (key_code == GLFW_KEY_L)
+		{
+			light_enabled = !light_enabled;
+			std::cerr << "light: " << light_enabled << std::endl;
+		}
+			
 
 		//toggle attenuation
 		if (key_code == GLFW_KEY_X)

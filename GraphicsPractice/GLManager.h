@@ -65,6 +65,8 @@ private:
 	static bool show_cursor;
 	static bool attenuation_enabled;
 	static bool texture_enabled;
+	static bool light_enabled;
+	static bool colour_enabled;
 	static bool close;
 
 	void reset_scene();

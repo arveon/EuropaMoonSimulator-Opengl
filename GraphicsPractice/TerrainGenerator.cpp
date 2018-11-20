@@ -108,12 +108,15 @@ Drawable* TerrainGenerator::create_terrain()
 		for (GLuint z = 0; z < z_points; z++)
 		{
 			GLfloat zpos = z * zpos_step;
-			GLfloat height = noise[(x*z_points + z) * octaves + octaves - 1];
+			GLfloat height = noise[(x*z_points + z) * octaves + octaves - 1] + 0.5f;
 			int cur_index = x*x_points + z;
-			verts[cur_index] = glm::vec3(xpos, height+0.5f, zpos);//x
+			verts[cur_index] = glm::vec3(xpos, height, zpos);//x
 			normals[cur_index] = glm::vec3(0, 1.f, 0);//x
+			colours[cur_index] = glm::vec4(1.f-height, 1.f-height, 1.f-height, 1.0f);
 		}
 	}
+
+
 
 	std::vector<GLuint> elements;
 	//calculate vertex order into element array
@@ -131,6 +134,7 @@ Drawable* TerrainGenerator::create_terrain()
 	calculate_normals(normals, elements, verts);
 
 	Drawable* res = new Drawable();
+	res->colours_enabled = true;
 	res->init(verts, (int)num_verts, colours, &elements[0], elements.size(), normals);
 
 	return res;
@@ -138,8 +142,8 @@ Drawable* TerrainGenerator::create_terrain()
 
 TerrainGenerator::TerrainGenerator()
 {
-	x_points = 200;
-	z_points = 200;
+	x_points = 50;
+	z_points = 50;
 
 	x_world = 10.f;
 	z_world = 10.f;

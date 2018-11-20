@@ -36,6 +36,12 @@ void Shader::init_shader(GLfloat aspect_ratio, int type)
 		texture_enabled_uniform_id = glGetUniformLocation(program, "texture_enabled");
 		glUniform1i(texture_enabled_uniform_id, false);
 
+		colour_enabled_uniform_id = glGetUniformLocation(program, "colour_enabled");
+		glUniform1i(texture_enabled_uniform_id, false);
+
+		light_enabled_uniform_id = glGetUniformLocation(program, "light_enabled");
+		glUniform1i(texture_enabled_uniform_id, true);
+
 		attenuation_enabled_uniform_id = glGetUniformLocation(program, "attenuation_enabled");
 		glUniform1i(attenuation_enabled_uniform_id, true);
 	}
@@ -91,6 +97,20 @@ void Shader::set_texture_enabled(GLboolean enabled)
 {
 	glUseProgram(program);
 	glUniform1i(texture_enabled_uniform_id, enabled);
+	glUseProgram(0);
+}
+
+void Shader::set_colour_enabled(GLboolean enabled)
+{
+	glUseProgram(program);
+	glUniform1i(colour_enabled_uniform_id, enabled);
+	glUseProgram(0);
+}
+
+void Shader::set_lighting_enabled(GLboolean enabled)
+{
+	glUseProgram(program);
+	glUniform1i(light_enabled_uniform_id, enabled);
 	glUseProgram(0);
 }
 

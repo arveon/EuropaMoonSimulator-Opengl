@@ -19,6 +19,8 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 	this->num_indices = num_indices;
 	this->indices = indices;
 
+	
+
 	if (tex_id != NULL && texcoords)
 	{
 		tex_enabled = true;
@@ -28,8 +30,7 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 
 	load_into_memory();
 
-	for (int i = 0; i < num_indices-2; i+=3)
-		std::cerr << indices[i] << " " << indices[i+1] << " " << indices[i+2] << std::endl;
+	
 
 	std::cerr << "END OF OBJECT" << std::endl;
 }
@@ -56,6 +57,9 @@ void Drawable::load_into_memory()
 	//load vertex colours into memory
 	if (colours_enabled)
 	{
+		/*for (int i = 0; i < num_verts; i += 1)
+			std::cerr << colours[i].x << " " << colours[i].y << " " << colours[i].z << std::endl;*/
+
 		glGenBuffers(1, &colour_buffer_id);
 		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * num_verts, colours, GL_STATIC_DRAW);
@@ -96,7 +100,7 @@ void Drawable::draw()
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, VALUES_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
 	if (normals_enabled)
