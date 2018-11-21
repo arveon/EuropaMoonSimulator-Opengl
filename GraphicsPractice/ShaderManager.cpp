@@ -3,19 +3,26 @@
 #include "ShaderManager.h"
 
 
-Shader ShaderManager::load_shader(const char* vertex_shader_path, const char* fragment_shader_path)
+Shader ShaderManager::load_shader(const char* vertex_shader_path, const char* fragment_shader_path, const char* geometry_shader_path)
 {
-	GLuint v_shader, f_shader;
+	GLuint v_shader, f_shader, g_shader;
 
 	std::string v_shader_txt = read_file(vertex_shader_path);
 	std::string f_shader_txt = read_file(fragment_shader_path);
 
 	v_shader = build_shader(GL_VERTEX_SHADER, v_shader_txt);
 	f_shader = build_shader(GL_FRAGMENT_SHADER, f_shader_txt);
+	if (geometry_shader_path != NULL)
+	{
+		std::string g_shader_txt = read_file(geometry_shader_path);
+		g_shader = build_shader(GL_GEOMETRY_SHADER, g_shader_txt);
+	}
 
 	GLuint program = glCreateProgram();
 
 	glAttachShader(program, v_shader);
+	if (geometry_shader_path != NULL)
+		glAttachShader(program, g_shader);
 	glAttachShader(program, f_shader);
 	glLinkProgram(program);
 
@@ -25,10 +32,13 @@ Shader ShaderManager::load_shader(const char* vertex_shader_path, const char* fr
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
 	char* program_error = (char*)malloc(sizeof(char) * (log_length + 1));
 	glGetProgramInfoLog(program, log_length, NULL, program_error);
-	std::cout << program_error << std::endl;
+	if(log_length > 0)
+		std::cout << program_error << std::endl;
 
 	glDeleteShader(v_shader);
 	glDeleteShader(f_shader);
+	if(geometry_shader_path != NULL)
+		glDeleteShader(g_shader);
 
 	return Shader(program);
 }
@@ -59,6 +69,9 @@ GLuint ShaderManager::build_shader(GLenum shaderType, const std::string & shader
 			break;
 		case GL_FRAGMENT_SHADER:
 			shader_type_string = "fragment";
+			break;
+		case GL_GEOMETRY_SHADER:
+			shader_type_string = "geometry";
 			break;
 		}
 		std::cerr << "Compile error in " << shader_type_string << " shader.\n\t" << logString << std::endl;

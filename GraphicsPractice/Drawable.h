@@ -21,6 +21,7 @@ protected:
 	GLuint texture_id;
 
 	Shader shader_program = NULL;
+	Shader normals_shader = NULL;
 
 	glm::vec3 *verts = nullptr;
 	glm::vec4 *colours = nullptr;
@@ -36,7 +37,10 @@ protected:
 
 	glm::vec3 center_position = glm::vec4(0);
 
+	bool draw_normals;
+
 	void load_into_memory();
+	void draw_object(int mode = 1);
 public:
 	Drawable() {};
 	~Drawable();
@@ -44,6 +48,9 @@ public:
 	virtual void init(Shader shader_program, glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
 
 	void set_shader(Shader shader_program) { this->shader_program = shader_program; }
+
+	void set_draw_normals(bool value) { this->draw_normals = value; }
+	void set_normal_shader(Shader normal_shader) { this->normals_shader = normal_shader; }
 	
 	bool tex_enabled;
 	bool normals_enabled;

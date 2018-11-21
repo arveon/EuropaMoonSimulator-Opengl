@@ -42,6 +42,7 @@ private:
 	Shader basic_shader = NULL;
 	Shader lightsource_shader = NULL;
 	Shader unlit_texture_shader = NULL;
+	Shader normals_shader = NULL;
 
 	GLuint skybox_tex;
 

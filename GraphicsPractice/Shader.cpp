@@ -17,7 +17,7 @@ void Shader::init_shader(GLfloat aspect_ratio, int type)
 	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 100.f);
 	glUniformMatrix4fv(projection_uniform_id, 1, GL_FALSE, &projection[0][0]);
 
-	if (type == BASIC_SHADER)
+	if (type == LIT_TEXTURED_SHADER)
 	{
 		//allocate shininess uniform and set to 10
 		shininess_uniform_id = glGetUniformLocation(program, "shininess");

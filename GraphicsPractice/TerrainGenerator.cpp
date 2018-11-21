@@ -152,7 +152,7 @@ Drawable* TerrainGenerator::create_terrain()
 			verts[cur_index] = glm::vec3(xpos, height, zpos);//x
 			normals[cur_index] = glm::vec3(0, 1.f, 0);//x
 			colours[cur_index] = glm::vec4(height, height, height, 1.0f);
-			std::cerr << height << std::endl;
+			//std::cerr << height << std::endl;
 		}
 	}
 
@@ -174,7 +174,8 @@ Drawable* TerrainGenerator::create_terrain()
 	calculate_normals(normals, elements, verts);
 
 	Drawable* res = new Drawable();
-	res->colours_enabled = true;
+	//res->colours_enabled = true;
+	res->normals_enabled = true;
 	res->init(verts, (int)num_verts, colours, &elements[0], elements.size(), normals);
 
 	return res;

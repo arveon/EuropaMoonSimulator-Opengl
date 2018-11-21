@@ -21,7 +21,7 @@ class ShaderManager
 {
 public:
 
-	static Shader load_shader(const char* shader_path, const char* fragment_shader_path);
+	static Shader load_shader(const char* shader_path, const char* fragment_shader_path, const char* geometry_shader_path=NULL);
 	static GLuint build_shader(GLenum shaderType, const std::string &shaderText);
 	static std::string read_file(const char* file_path);
 

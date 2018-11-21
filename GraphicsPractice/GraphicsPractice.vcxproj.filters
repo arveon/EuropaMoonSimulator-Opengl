@@ -51,6 +51,9 @@
     <ClCompile Include="tiny_obj_loader.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLManager.h">
@@ -89,14 +92,11 @@
     <ClInclude Include="tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\basic.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\shaders\basic.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\shaders\lightsource.vert">
       <Filter>Resource Files</Filter>
     </None>
@@ -107,6 +107,21 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\shaders\unlit_textured.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\lit_textured.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\lit_textured.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\normals.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\normals.geom">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\normals.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

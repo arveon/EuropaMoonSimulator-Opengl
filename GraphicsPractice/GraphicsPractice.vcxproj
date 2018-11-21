@@ -154,10 +154,13 @@
     <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\basic.frag" />
-    <None Include="..\shaders\basic.vert" />
+    <None Include="..\shaders\lit_textured.frag" />
+    <None Include="..\shaders\lit_textured.vert" />
     <None Include="..\shaders\lightsource.frag" />
     <None Include="..\shaders\lightsource.vert" />
+    <None Include="..\shaders\normals.frag" />
+    <None Include="..\shaders\normals.geom" />
+    <None Include="..\shaders\normals.vert" />
     <None Include="..\shaders\unlit_textured.frag" />
     <None Include="..\shaders\unlit_textured.vert" />
   </ItemGroup>

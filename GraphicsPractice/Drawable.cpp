@@ -32,7 +32,7 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 
 	
 
-	std::cerr << "END OF OBJECT" << std::endl;
+	//std::cerr << "END OF OBJECT" << std::endl;
 }
 
 Drawable::~Drawable()
@@ -85,13 +85,8 @@ void Drawable::load_into_memory()
 	}
 }
 
-//draws a drawable object
-void Drawable::draw()
+void Drawable::draw_object(int mode)
 {
-	shader_program.set_model_view_matrix(view_matrix * model_matrix);
-
-	glUseProgram(shader_program.get_program_id());	
-
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -115,25 +110,48 @@ void Drawable::draw()
 		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
-		
+
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 	}
-	
+
 	// Define triangle winding as counter-clockwise
 	glFrontFace(GL_CW);
-	glPointSize(3.f);
+	glPointSize(5.f);
 
-	
-	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
+	
+	if(mode == 1)
+		glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
+	else if(mode == 2)
+		glDrawElements(GL_POINTS, num_indices, GL_UNSIGNED_INT, 0);
+	/*else if (mode == 3)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
+	}*/
+		
+
 
 	//unbind everything
 	if (tex_enabled)
 		glBindTexture(GL_TEXTURE_2D, 0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+//draws a drawable object
+void Drawable::draw()
+{
+	shader_program.set_model_view_matrix(view_matrix * model_matrix);
+	normals_shader.set_model_view_matrix(view_matrix * model_matrix);
+
+	glUseProgram(shader_program.get_program_id());	
+	draw_object(1);
+	glUseProgram(0);
+
+	glUseProgram(normals_shader.get_program_id());
+	draw_object(2);
 	glUseProgram(0);
 
 	//reset the model matrix

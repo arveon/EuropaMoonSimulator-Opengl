@@ -70,15 +70,18 @@ void GLManager::init()
 	//load required shaders
 	try
 	{
-		basic_shader = ShaderManager::load_shader("../shaders/basic.vert", "../shaders/basic.frag");
-		basic_shader.init_shader(aspect_ratio, BASIC_SHADER);
+		basic_shader = ShaderManager::load_shader("../shaders/lit_textured.vert", "../shaders/lit_textured.frag");
+		basic_shader.init_shader(aspect_ratio, LIT_TEXTURED_SHADER);
 		basic_shader.set_shininess(1);
 
 		lightsource_shader = ShaderManager::load_shader( "../shaders/lightsource.vert","../shaders/lightsource.frag");
-		lightsource_shader.init_shader(aspect_ratio, LIGHTSOURCE_SHADER);
+		lightsource_shader.init_shader(aspect_ratio, BASIC_SHADER);
 
 		unlit_texture_shader = ShaderManager::load_shader("../shaders/unlit_textured.vert", "../shaders/unlit_textured.frag");
-		unlit_texture_shader.init_shader(aspect_ratio, LIGHTSOURCE_SHADER);
+		unlit_texture_shader.init_shader(aspect_ratio, BASIC_SHADER);
+
+		normals_shader = ShaderManager::load_shader("../shaders/normals.vert","../shaders/normals.frag","../shaders/normals.geom");
+		normals_shader.init_shader(aspect_ratio, BASIC_SHADER);
 	}
 	catch (std::exception e)
 	{
@@ -123,9 +126,9 @@ void GLManager::init_objects()
 
 	monkey = terrain_gen.create_terrain();
 	
-
 	//monkey = ObjectLoader::load_object("../models/monkey_normals.obj");
 	monkey->set_shader(basic_shader);
+	monkey->set_normal_shader(normals_shader);
 	//monkey->colours_enabled = false;
 
 	sun = Lightsource(lightsource_shader);
@@ -164,6 +167,7 @@ void GLManager::render(float delta_time)
 	basic_shader.set_projection_matrix(projection);
 	lightsource_shader.set_projection_matrix(projection);
 	unlit_texture_shader.set_projection_matrix(projection);
+	normals_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
 	monkey->set_view_matrix(camera.get_view_matrix());
