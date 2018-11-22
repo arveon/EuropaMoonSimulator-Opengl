@@ -18,6 +18,7 @@ bool GLManager::attenuation_enabled = true;
 bool GLManager::texture_enabled = true;
 bool GLManager::light_enabled = true;
 bool GLManager::colour_enabled = false;
+bool GLManager::draw_normals = false;
 
 glm::vec2 GLManager::cursor_movement;
 
@@ -122,13 +123,14 @@ void GLManager::init()
 ///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
-	test.init(lightsource_shader);
+	//test.init(lightsource_shader);
 
 	monkey = terrain_gen.create_terrain();
 	
 	//monkey = ObjectLoader::load_object("../models/monkey_normals.obj");
 	monkey->set_shader(basic_shader);
 	monkey->set_normal_shader(normals_shader);
+	basic_shader.set_shininess(1.f);
 	//monkey->colours_enabled = false;
 
 	sun = Lightsource(lightsource_shader);
@@ -173,6 +175,7 @@ void GLManager::render(float delta_time)
 	monkey->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
+	monkey->set_draw_normals(draw_normals);
 
 	//manipulate and draw other objects
 	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
@@ -198,6 +201,8 @@ void GLManager::render(float delta_time)
 	basic_shader.set_texture_enabled(texture_enabled);
 	basic_shader.set_colour_enabled(colour_enabled);
 	basic_shader.set_lighting_enabled(light_enabled);
+
+
 }
 
 void GLManager::terminate()
@@ -274,6 +279,12 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		{
 			light_enabled = !light_enabled;
 			std::cerr << "light: " << light_enabled << std::endl;
+		}
+
+		//toggle normals
+		if (key_code == GLFW_KEY_N)
+		{
+			draw_normals = !draw_normals;
 		}
 			
 

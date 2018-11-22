@@ -4,7 +4,7 @@
 #version 420
 
 in vec3 fposition, fnormal, flightpos;
-in vec4 fdiffuse, fspecular, fambient,fcolour;
+in vec4 fdiffuse, fspecular, fambient, fcolour;
 in vec2 ftexCoords;
 
 out vec4 outputColor;
@@ -49,11 +49,11 @@ void main()
 		float attenuation = 1;
 		if(attenuation_enabled)
 		{
-			float k1 = .01;
+			float k1 = 0.01f;
 			attenuation = 1.0 / (k1 + k1*distance_to_light + k1*pow(distance_to_light, 2));
 		}
 
-		outputColor = attenuation*texcolor*(diffuse + specular)*vert_colour + texcolor*fambient*vert_colour;
+		outputColor = attenuation*texcolor*(diffuse + specular) + texcolor*fambient;
 	}
 	else
 		outputColor = vert_colour;

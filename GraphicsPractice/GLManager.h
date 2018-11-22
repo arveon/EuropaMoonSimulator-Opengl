@@ -68,6 +68,7 @@ private:
 	static bool texture_enabled;
 	static bool light_enabled;
 	static bool colour_enabled;
+	static bool draw_normals;
 	static bool close;
 
 	void reset_scene();

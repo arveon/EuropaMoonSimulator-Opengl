@@ -47,6 +47,7 @@ void Drawable::load_into_memory()
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, verts, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//std::cerr << "19v: " << verts[19].x << " " << verts[19].y << " " << verts[19].z << std::endl;
 
 	//load indices into memory
 	glGenBuffers(1, &index_buffer_id);
@@ -150,9 +151,12 @@ void Drawable::draw()
 	draw_object(1);
 	glUseProgram(0);
 
-	glUseProgram(normals_shader.get_program_id());
-	draw_object(2);
-	glUseProgram(0);
+	if (draw_normals)
+	{
+		glUseProgram(normals_shader.get_program_id());
+		draw_object(2);
+		glUseProgram(0);
+	}
 
 	//reset the model matrix
 	this->model_matrix = glm::mat4(1.0f);

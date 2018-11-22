@@ -88,29 +88,42 @@ void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int n
 void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint> elements, glm::vec3* verts)
 {
 	GLuint element_pos = 0;
-	glm::vec3 AB, AC, cross;
+	glm::vec3 AB, AC, cross_product;
 
-	//through lines
-	for (GLuint x = 0; x < x_points-1; x++)
+	// Loop through each triangle strip  
+	for (GLuint x = 0; x < x_points - 1; x++)
 	{
-		//through triangles in strip
-		for (GLuint z = 0; z < z_points*2-2; z++)
+		// Loop along the strip
+		for (GLuint tri = 0; tri < z_points * 2 - 2; tri++)
 		{
+			// Extract the vertex indices from the element array 
 			GLuint v1 = elements[element_pos];
-			GLuint v2 = elements[element_pos+1];
-			GLuint v3 = elements[element_pos+2];
+			GLuint v2 = elements[element_pos + 1];
+			GLuint v3 = elements[element_pos + 2];
 
+			// Define the two vectors for the triangle
 			AB = verts[v2] - verts[v1];
 			AC = verts[v3] - verts[v1];
 
-			cross = glm::normalize(glm::cross(AC, AB));
-			normals[v1] += cross;
-			normals[v2] += cross;
-			normals[v3] += cross;
+			// Calculate the cross product
+			cross_product = glm::normalize(glm::cross(AC, AB));
 
+			// Add this normal to the vertex normal for all three vertices in the triangle
+			normals[v1] += cross_product;
+			normals[v2] += cross_product;
+			normals[v3] += cross_product;
+
+			/*if (v1 == 19 || v2 == 19 || v3 == 19)
+			{
+				std::cerr << v1 << " " << v2 << " " << v3 << std::endl;
+				std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
+			}*/
+
+			// Move on to the next vertex along the strip
 			element_pos++;
 		}
 
+		// Jump past the last two element positions to reach the start of the strip
 		element_pos += 2;
 	}
 	//normalise normals
@@ -118,9 +131,11 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	{
 		normals[v] = glm::normalize(normals[v]);
 		//normals[v].x = -normals[v].x;
-		std::cerr << normals[v].x << " " << normals[v].y << " " << normals[v].z << std::endl;
+		//std::cerr << v << ": " << normals[v].x << " " << normals[v].y << " " << normals[v].z << std::endl;
 	}
 
+	
+	std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
 Drawable* TerrainGenerator::create_terrain()
@@ -153,7 +168,8 @@ Drawable* TerrainGenerator::create_terrain()
 			verts[cur_index] = glm::vec3(xpos, height, zpos);//x
 			normals[cur_index] = glm::vec3(0, 1.f, 0);//x
 			colours[cur_index] = glm::vec4(height, height, height, 1.0f);
-			//std::cerr << height << std::endl;
+
+			//std::cerr << cur_index << "v: " << verts[cur_index].x << " " << verts[cur_index].y << " " << verts[cur_index].z << std::endl;
 		}
 	}
 
@@ -165,14 +181,16 @@ Drawable* TerrainGenerator::create_terrain()
 		GLuint bottom = top + z_points;//start of next row
 		for (GLuint z = 0; z < z_points; z++)
 		{
-			elements.push_back(top + z);
-			elements.push_back(bottom + z);
+			elements.push_back(top++);
+			elements.push_back(bottom++);
 		}
 	}
 
 	scale_heights(0, 3, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
+	verts[0].y = -1;
 	calculate_normals(normals, elements, verts);
+	
 
 	Drawable* res = new Drawable();
 	res->colours_enabled = true;
@@ -184,17 +202,17 @@ Drawable* TerrainGenerator::create_terrain()
 
 TerrainGenerator::TerrainGenerator()
 {
-	x_points = 10;
-	z_points = 10;
+	x_points = 50;
+	z_points = 50;
 
 	x_world = 20.f;
 	z_world = 20.f;
 
 	altitude_variation_scale = 10;
 
-	octaves = 4;
+	octaves = 8;
 	perlin_scale = 4.f;
-	perlin_freq = 3.f;
+	perlin_freq = 10.f;
 }
 
 

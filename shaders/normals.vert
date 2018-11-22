@@ -5,6 +5,7 @@ layout(location=2) in vec3 normal;
 
 out vec3 vnormal;
 
+
 void main()
 {
 	vnormal = normal;
