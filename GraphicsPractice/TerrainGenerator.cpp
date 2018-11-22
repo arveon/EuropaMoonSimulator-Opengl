@@ -170,7 +170,7 @@ Drawable* TerrainGenerator::create_terrain()
 		}
 	}
 
-	scale_heights(0, 10, verts, num_verts);
+	scale_heights(0, 3, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
 	calculate_normals(normals, elements, verts);
 
