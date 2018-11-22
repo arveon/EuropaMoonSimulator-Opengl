@@ -101,7 +101,6 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 			GLuint v3 = elements[element_pos+2];
 
 			AB = verts[v2] - verts[v1];
-			
 			AC = verts[v3] - verts[v1];
 
 			cross = glm::normalize(glm::cross(AC, AB));
@@ -118,6 +117,8 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	for (GLuint v = 0; v < x_points*z_points; v++)
 	{
 		normals[v] = glm::normalize(normals[v]);
+		//normals[v].x = -normals[v].x;
+		std::cerr << normals[v].x << " " << normals[v].y << " " << normals[v].z << std::endl;
 	}
 
 }
@@ -169,12 +170,12 @@ Drawable* TerrainGenerator::create_terrain()
 		}
 	}
 
-	scale_heights(0, 3, verts, num_verts);
+	scale_heights(0, 10, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
 	calculate_normals(normals, elements, verts);
 
 	Drawable* res = new Drawable();
-	//res->colours_enabled = true;
+	res->colours_enabled = true;
 	res->normals_enabled = true;
 	res->init(verts, (int)num_verts, colours, &elements[0], elements.size(), normals);
 

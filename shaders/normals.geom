@@ -3,7 +3,7 @@ layout(points) in;
 layout(line_strip, max_vertices=2) out;
 
 uniform mat4 model_view, projection;
-float length = 1;
+float length = 0.1;
 vec3 colour = vec3(1,1,0);
 
 in vec3 vnormal[];
@@ -18,9 +18,9 @@ void main()
 	gl_Position = start;
 	EmitVertex();
 
-	vec4 mvp_normal = normalize(mvp * vec4(vnormal[0],0)) * length;
+	vec4 mvp_normal = normalize(vec4(vnormal[0],0)) * length;
 
-	vec4 end = start + mvp_normal;
+	vec4 end = start + mvp * mvp_normal;
 	gl_Position = end;
 	EmitVertex();
 
