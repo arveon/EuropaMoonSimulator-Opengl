@@ -30,6 +30,7 @@
 #include "Lightsource.h"
 
 #include "TerrainGenerator.h"
+#include "Terrain.h"
 
 #include "Camera.h"
 
@@ -44,13 +45,14 @@ private:
 	Shader unlit_texture_shader = NULL;
 	Shader normals_shader = NULL;
 
-	GLuint skybox_tex;
+	GLuint terrain_tex;
 
 	Cube test;
 	
 	Lightsource sun;
 
 	Drawable* monkey;
+	Terrain* terrain;
 
 	TerrainGenerator terrain_gen;
 

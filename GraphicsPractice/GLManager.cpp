@@ -94,9 +94,9 @@ void GLManager::init()
 	//load required textures
 	try
 	{
-		skybox_tex = SOIL_load_OGL_texture("..\\textures\\asteroid1.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		terrain_tex = SOIL_load_OGL_texture("..\\textures\\asteroid1.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
-		if (skybox_tex == 0)
+		if (terrain_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
 		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
@@ -125,11 +125,14 @@ void GLManager::init_objects()
 {
 	//test.init(lightsource_shader);
 
-	monkey = terrain_gen.create_terrain();
+	terrain_gen.set_texture(terrain_tex);
+	terrain = terrain_gen.create_terrain();
+	terrain->set_shader(basic_shader);
+	terrain->set_normal_shader(normals_shader);
 	
 	//monkey = ObjectLoader::load_object("../models/monkey_normals.obj");
-	monkey->set_shader(basic_shader);
-	monkey->set_normal_shader(normals_shader);
+	/*monkey->set_shader(basic_shader);
+	monkey->set_normal_shader(normals_shader);*/
 	basic_shader.set_shininess(1.f);
 	//monkey->colours_enabled = false;
 
@@ -172,17 +175,19 @@ void GLManager::render(float delta_time)
 	normals_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
-	monkey->set_view_matrix(camera.get_view_matrix());
+	//monkey->set_view_matrix(camera.get_view_matrix());
+	terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
-	monkey->set_draw_normals(draw_normals);
+	//monkey->set_draw_normals(draw_normals);
+	terrain->set_draw_normals(draw_normals);
 
 	//manipulate and draw other objects
 	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
-	monkey->translate(glm::vec3(-10,-5,-10));
+	terrain->translate(glm::vec3(-10, -5, -10));
 	
 	//test.draw();
-	monkey->draw();
+	terrain->draw();
 	sun.draw();
 
 	//set the light position in lit shader

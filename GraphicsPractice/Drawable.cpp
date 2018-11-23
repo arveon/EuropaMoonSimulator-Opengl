@@ -121,10 +121,26 @@ void Drawable::draw_object(int mode)
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
 	
-	if(mode == 1)
-		glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
-	else if(mode == 2)
+	if (mode == DRAW_TRIANGLE_STRIP_MODE)
+	{
+		if (is_triangle_strips)
+		{
+			for (int i = 0; i < (num_verts / verts_in_line)-1; i++)
+			{
+				GLuint loc = sizeof(GLuint) * i * verts_in_line * 2;
+				glDrawElements(GL_TRIANGLE_STRIP, verts_in_line * 2, GL_UNSIGNED_INT, (GLvoid*)loc);
+				std::cout << "end" << std::endl;
+			}
+			
+		}
+		else 
+			mode = DRAW_TRIANGLES_MODE;
+	}
+	//need separate in case triangle strip is not set up
+	if(mode == DRAW_POINTS_MODE)
 		glDrawElements(GL_POINTS, num_indices, GL_UNSIGNED_INT, 0);
+	else if(mode == DRAW_TRIANGLES_MODE)
+		glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
 	/*else if (mode == 3)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -148,13 +164,13 @@ void Drawable::draw()
 	normals_shader.set_model_view_matrix(view_matrix * model_matrix);
 
 	glUseProgram(shader_program.get_program_id());	
-	draw_object(1);
+	draw_object(DRAW_TRIANGLES_MODE);
 	glUseProgram(0);
 
 	if (draw_normals)
 	{
 		glUseProgram(normals_shader.get_program_id());
-		draw_object(2);
+		draw_object(DRAW_POINTS_MODE);
 		glUseProgram(0);
 	}
 

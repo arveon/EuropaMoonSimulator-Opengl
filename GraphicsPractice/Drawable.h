@@ -38,6 +38,9 @@ protected:
 	glm::vec3 center_position = glm::vec4(0);
 
 	bool draw_normals;
+	bool is_triangle_strips;
+
+	int verts_in_line = 0;
 
 	void load_into_memory();
 	void draw_object(int mode = 1);
@@ -46,6 +49,7 @@ public:
 	~Drawable();
 	virtual void init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
 	virtual void init(Shader shader_program, glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
+	void set_triangle_strip(int verts_in_line) { is_triangle_strips = true; this->verts_in_line = verts_in_line; };
 
 	void set_shader(Shader shader_program) { this->shader_program = shader_program; }
 

@@ -8,7 +8,7 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	tinyobj::attrib_t obj;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	int num_verts, num_ind, num_normals, num_tex_coords = 0;
+	int num_verts, num_normals, num_tex_coords = 0;
 
 	glm::vec4 *colors = nullptr;
 	glm::vec3 *vertices, *normals;
@@ -108,7 +108,7 @@ void ObjectLoader::parse_indices(std::vector<tinyobj::shape_t> shapes, GLuint** 
 		size_t offset = 0;
 		for (size_t cface = 0; cface < s.mesh.num_face_vertices.size(); cface++)
 		{
-			int face_verts = s.mesh.num_face_vertices[cface];//number of vertices in current face
+			size_t face_verts = s.mesh.num_face_vertices[cface];//number of vertices in current face
 
 			for (size_t vert = 0; vert < face_verts; vert++)
 			{
