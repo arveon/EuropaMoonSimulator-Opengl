@@ -132,6 +132,7 @@
     <ClCompile Include="Lightsource.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjectLoader.cpp" />
+    <ClCompile Include="Ridge.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="GLManager.h" />
     <ClInclude Include="Lightsource.h" />
     <ClInclude Include="ObjectLoader.h" />
+    <ClInclude Include="Ridge.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Sphere.h" />

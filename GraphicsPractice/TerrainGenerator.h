@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 
+#include "Ridge.h"
 
 class TerrainGenerator
 {

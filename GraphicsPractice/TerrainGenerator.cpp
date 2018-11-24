@@ -150,6 +150,7 @@ Terrain* TerrainGenerator::create_terrain()
 	//calculate noise
 	//allocate and set to 0
 	GLfloat* noise = TerrainGenerator::calculate_noise(x_points, z_points, octaves, perlin_freq, perlin_scale);
+	glm::vec3* ridge = Ridge::generate_ridge(glm::vec2(x_points, z_points), 0.1, -0.1, 0.5);
 
 	GLfloat xpos_start = -x_world / 2.f;
 	GLfloat zpos_start = -z_world / 2.f;
@@ -166,7 +167,7 @@ Terrain* TerrainGenerator::create_terrain()
 			GLfloat zpos = z * zpos_step;
 			GLfloat height = (noise[(x*z_points + z) * octaves]);
 			int cur_index = x*x_points + z;
-			verts[cur_index] = glm::vec3(xpos, height, zpos);//x
+			verts[cur_index] = glm::vec3(xpos, height + ridge[cur_index].y, zpos);//x
 			normals[cur_index] = glm::vec3(0, 1.f, 0);//x
 			colours[cur_index] = glm::vec4(height, height, height, 1.0f);
 			texcoords[cur_index] = glm::vec2(xpos / x_world,zpos/z_world);
@@ -209,7 +210,7 @@ TerrainGenerator::TerrainGenerator()
 
 	octaves = 8;
 	perlin_scale = 4.f;
-	perlin_freq = 10.f;
+	perlin_freq = 2.f;
 }
 
 
