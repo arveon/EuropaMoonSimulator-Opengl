@@ -167,14 +167,15 @@ Terrain* TerrainGenerator::create_terrain()
 			GLfloat zpos = z * zpos_step;
 			GLfloat height = (noise[(x*z_points + z) * octaves]);
 			int cur_index = x*x_points + z;
-			verts[cur_index] = glm::vec3(xpos, height + ridge[cur_index].y, zpos);//x
+			verts[cur_index] = glm::vec3(xpos, height, zpos);//x
 			normals[cur_index] = glm::vec3(0, 1.f, 0);//x
 			colours[cur_index] = glm::vec4(height, height, height, 1.0f);
 			texcoords[cur_index] = glm::vec2(xpos / x_world,zpos/z_world);
 
-			//std::cerr << cur_index << "v: " << verts[cur_index].x << " " << verts[cur_index].y << " " << verts[cur_index].z << std::endl;
 		}
 	}
+	apply_terrain_feature(ridge, verts, glm::vec2(-5, -15), glm::vec2(0.5,0.5), glm::vec2(x_points, z_points), glm::vec2(x_points,z_points));
+
 
 	std::vector<GLuint>* elements = new std::vector<GLuint>();
 	//calculate vertex order into element array
@@ -191,11 +192,58 @@ Terrain* TerrainGenerator::create_terrain()
 
 	scale_heights(0, 3, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
-	verts[0].y = -1;
 	calculate_normals(normals, elements, verts);
 	
 	Terrain* temp = new Terrain(x_points, verts, (int)num_verts, colours, &(elements->at(0)), elements->size(), normals,texcoords, terrain_texture);
 	return temp;
+}
+
+void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution)
+{
+	//for every vertical row, scan all elements
+	for (int z = 0; z < feature_resolution.y; z+=1)
+	{
+		for (int x = 0; x < feature_resolution.x; x+=1)
+		{
+			int terr_x = x + feature_position.x;
+			int terr_z = z + feature_position.y;
+
+			//this ensures that rows don't get shifted and feature is properly translated
+			if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0)
+				continue;
+
+			int terr_ind = terr_z * terrain_resolution.y + terr_x;
+			int feature_ind = z * feature_resolution.y + x;
+
+			//just a safeguard
+			if (terr_ind < 0 || feature_ind < 0)
+				continue;
+
+			terrain[terr_ind].y += feature[feature_ind].y;			
+		}
+	}
+
+
+
+
+
+	////generate vertices
+	//for (GLuint x = 0; x < x_points; x++)
+	//{
+
+	//	for (GLuint z = 0; z < z_points; z++)
+	//	{
+	//		//calculate feature index at that terrain position
+	//		int feature_index = x * x_points + z;
+
+	//		int cur_index = x * x_points + z;
+	//		terrain[cur_index].y += feature[feature_index].y;
+
+	//		//std::cerr << cur_index << "v: " << verts[cur_index].x << " " << verts[cur_index].y << " " << verts[cur_index].z << std::endl;
+	//	}
+	//}
+
+
 }
 
 TerrainGenerator::TerrainGenerator()

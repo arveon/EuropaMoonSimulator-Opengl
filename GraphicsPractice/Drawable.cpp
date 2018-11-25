@@ -129,7 +129,6 @@ void Drawable::draw_object(int mode)
 			{
 				GLuint loc = sizeof(GLuint) * i * verts_in_line * 2;
 				glDrawElements(GL_TRIANGLE_STRIP, verts_in_line * 2, GL_UNSIGNED_INT, (GLvoid*)loc);
-				std::cout << "end" << std::endl;
 			}
 			
 		}
