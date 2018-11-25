@@ -174,7 +174,7 @@ Terrain* TerrainGenerator::create_terrain()
 
 		}
 	}
-	apply_terrain_feature(ridge, verts, glm::vec2(-5, -15), glm::vec2(0.5,0.5), glm::vec2(x_points, z_points), glm::vec2(x_points,z_points));
+	apply_terrain_feature(ridge, verts, glm::vec2(10, 15), glm::vec2(0.5,0.2), glm::vec2(x_points, z_points), glm::vec2(x_points,z_points));
 
 
 	std::vector<GLuint>* elements = new std::vector<GLuint>();
@@ -201,12 +201,12 @@ Terrain* TerrainGenerator::create_terrain()
 void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution)
 {
 	//for every vertical row, scan all elements
-	for (int z = 0; z < feature_resolution.y; z+=1)
+	for (int z = 0; z < feature_resolution.y; z+=round(1/feature_scale.y))
 	{
-		for (int x = 0; x < feature_resolution.x; x+=1)
+		for (int x = 0; x < feature_resolution.x; x+=round(1/feature_scale.x))
 		{
-			int terr_x = x + feature_position.x;
-			int terr_z = z + feature_position.y;
+			int terr_x = x * feature_scale.x + feature_position.x;
+			int terr_z = z * feature_scale.y + feature_position.y;
 
 			//this ensures that rows don't get shifted and feature is properly translated
 			if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0)
