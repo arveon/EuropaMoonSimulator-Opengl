@@ -152,6 +152,8 @@ Terrain* TerrainGenerator::create_terrain()
 	GLfloat* noise = TerrainGenerator::calculate_noise(x_points, z_points, octaves, perlin_freq, perlin_scale);
 	glm::vec2 ridge_resolution = glm::vec2(x_points, z_points);
 	glm::vec3* ridge = Ridge::generate_ridge(ridge_resolution, 0.1, -0.1, 0.5);
+	glm::vec3* crater = Ridge::generate_crater(ridge_resolution, -0.2, 0.5);
+	glm::vec3* height = Ridge::generate_crater(ridge_resolution, 0.2, 0.5);
 
 	GLfloat xpos_start = -x_world / 2.f;
 	GLfloat zpos_start = -z_world / 2.f;
@@ -175,7 +177,10 @@ Terrain* TerrainGenerator::create_terrain()
 
 		}
 	}
-	apply_terrain_feature(ridge, verts, glm::vec2(10, 15), glm::vec2(0.25,0.2), ridge_resolution, glm::vec2(x_points,z_points), 0);
+	apply_terrain_feature(ridge, verts, glm::vec2(0, 15), glm::vec2(1,0.2), ridge_resolution, glm::vec2(x_points,z_points), 0);
+	apply_terrain_feature(crater, verts, glm::vec2(10, 10), glm::vec2(0.5, 0.7), ridge_resolution, glm::vec2(x_points, z_points), 0);
+	apply_terrain_feature(ridge, verts, glm::vec2(0, 30), glm::vec2(1, 0.5), ridge_resolution, glm::vec2(x_points, z_points), 0);
+	apply_terrain_feature(height, verts, glm::vec2(4, 4), glm::vec2(0.2, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);
 
 
 	std::vector<GLuint>* elements = new std::vector<GLuint>();
@@ -203,9 +208,9 @@ void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * te
 {
 	std::vector<int> visited_indices;
 	//for every vertical row, scan all elements
-	for (int z = 0; z < feature_resolution.y; z+=round(1/feature_scale.y))
+	for (int z = 0; z < feature_resolution.y; z+=round(1))
 	{
-		for (int x = 0; x < feature_resolution.x; x+=round(1/feature_scale.x))
+		for (int x = 0; x < feature_resolution.x; x+=round(1))
 		{
 			int terr_x = (x * feature_scale.x + feature_position.x);
 			int terr_z = (z * feature_scale.y + feature_position.y);

@@ -85,6 +85,33 @@ glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float 
 		return verts;
 }
 
+glm::vec3 * Ridge::generate_crater(glm::vec2 resolution, float height, float radius)
+{
+	glm::vec3* verts = nullptr;
+	verts = new glm::vec3[resolution.x * resolution.y];
+
+	glm::vec2 center = glm::vec2(std::round(resolution.x / 2), std::round(resolution.y / 2));
+
+	float step_x = 1 / resolution.x;
+	float step_y = 1 / resolution.y;
+
+	for(int i = 0; i < resolution.y; i++)
+		for (int j = 0; j < resolution.x; j++)
+		{
+			float dist_from_center_x = abs(j*step_x - 0.5);
+			float dist_from_center_y = abs(i*step_y - 0.5);
+
+			verts[i*(int)resolution.x + j] = glm::vec3(i,0,j);
+			float dist_from_center = std::sqrt(pow(dist_from_center_x,2) + pow(dist_from_center_y,2));
+			if (dist_from_center < radius)
+				verts[i*(int)resolution.x + j].y = height;
+		}
+
+
+
+	return verts;
+}
+
 Ridge::Ridge()
 {
 }
