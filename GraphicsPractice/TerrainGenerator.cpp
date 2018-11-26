@@ -150,7 +150,8 @@ Terrain* TerrainGenerator::create_terrain()
 	//calculate noise
 	//allocate and set to 0
 	GLfloat* noise = TerrainGenerator::calculate_noise(x_points, z_points, octaves, perlin_freq, perlin_scale);
-	glm::vec3* ridge = Ridge::generate_ridge(glm::vec2(x_points, z_points), 0.1, -0.1, 0.5);
+	glm::vec2 ridge_resolution = glm::vec2(x_points, z_points);
+	glm::vec3* ridge = Ridge::generate_ridge(ridge_resolution, 0.1, -0.1, 0.5);
 
 	GLfloat xpos_start = -x_world / 2.f;
 	GLfloat zpos_start = -z_world / 2.f;
@@ -174,7 +175,7 @@ Terrain* TerrainGenerator::create_terrain()
 
 		}
 	}
-	apply_terrain_feature(ridge, verts, glm::vec2(10, 15), glm::vec2(0.5,0.2), glm::vec2(x_points, z_points), glm::vec2(x_points,z_points));
+	apply_terrain_feature(ridge, verts, glm::vec2(10, 15), glm::vec2(0.25,0.2), ridge_resolution, glm::vec2(x_points,z_points), 0);
 
 
 	std::vector<GLuint>* elements = new std::vector<GLuint>();
@@ -198,21 +199,41 @@ Terrain* TerrainGenerator::create_terrain()
 	return temp;
 }
 
-void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution)
+void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation)
 {
+	std::vector<int> visited_indices;
 	//for every vertical row, scan all elements
 	for (int z = 0; z < feature_resolution.y; z+=round(1/feature_scale.y))
 	{
 		for (int x = 0; x < feature_resolution.x; x+=round(1/feature_scale.x))
 		{
-			int terr_x = x * feature_scale.x + feature_position.x;
-			int terr_z = z * feature_scale.y + feature_position.y;
+			int terr_x = (x * feature_scale.x + feature_position.x);
+			int terr_z = (z * feature_scale.y + feature_position.y);
+
+			int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
+			int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
 
 			//this ensures that rows don't get shifted and feature is properly translated
-			if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0)
+			if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 ||
+				terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0)
 				continue;
 
-			int terr_ind = terr_z * terrain_resolution.y + terr_x;
+			int terr_ind = terr_rotatedz * terrain_resolution.y + terr_rotatedx;
+
+
+			//check if index was used and if it was, go to next iteration
+			//this avoids adding values multiple times to same index
+			bool done = false;
+			for (int i = 0; i < visited_indices.size(); i++)
+				if (visited_indices.at(i) == terr_ind)
+				{
+					done = true;
+					break;
+				}
+
+			if (done)
+				continue;
+
 			int feature_ind = z * feature_resolution.y + x;
 
 			//just a safeguard
@@ -220,6 +241,7 @@ void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * te
 				continue;
 
 			terrain[terr_ind].y += feature[feature_ind].y;			
+			visited_indices.push_back(terr_ind);
 		}
 	}
 
