@@ -151,9 +151,9 @@ Terrain* TerrainGenerator::create_terrain()
 	//allocate and set to 0
 	GLfloat* noise = TerrainGenerator::calculate_noise(x_points, z_points, octaves, perlin_freq, perlin_scale);
 	glm::vec2 ridge_resolution = glm::vec2(x_points, z_points);
-	glm::vec3* ridge = Ridge::generate_ridge(ridge_resolution, 0.1, -0.1, 0.5);
-	glm::vec3* crater = Ridge::generate_crater(ridge_resolution, -0.2, 0.5);
-	glm::vec3* height = Ridge::generate_crater(ridge_resolution, 0.2, 0.5);
+	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge(ridge_resolution, 0.1, -0.1, 0.5);
+	/*std::vector<glm::vec3> crater = Ridge::generate_crater(ridge_resolution, -0.2, 0.5);
+	std::vector<glm::vec3> height = Ridge::generate_crater(ridge_resolution, 0.2, 0.5);*/
 
 	GLfloat xpos_start = -x_world / 2.f;
 	GLfloat zpos_start = -z_world / 2.f;
@@ -177,10 +177,10 @@ Terrain* TerrainGenerator::create_terrain()
 
 		}
 	}
-	apply_terrain_feature(ridge, verts, glm::vec2(0, 15), glm::vec2(1,0.2), ridge_resolution, glm::vec2(x_points,z_points), 0);
-	apply_terrain_feature(crater, verts, glm::vec2(10, 10), glm::vec2(0.5, 0.7), ridge_resolution, glm::vec2(x_points, z_points), 0);
+	apply_terrain_feature(ridge, verts, glm::vec2(0, 15), glm::vec2(1,0.5), ridge_resolution, glm::vec2(x_points,z_points), 30);
+	/*apply_terrain_feature(crater, verts, glm::vec2(10, 10), glm::vec2(0.5, 0.7), ridge_resolution, glm::vec2(x_points, z_points), 0);
 	apply_terrain_feature(ridge, verts, glm::vec2(0, 30), glm::vec2(1, 0.5), ridge_resolution, glm::vec2(x_points, z_points), 0);
-	apply_terrain_feature(height, verts, glm::vec2(4, 4), glm::vec2(0.2, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);
+	apply_terrain_feature(height, verts, glm::vec2(4, 4), glm::vec2(0.2, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);*/
 
 
 	std::vector<GLuint>* elements = new std::vector<GLuint>();
@@ -204,79 +204,59 @@ Terrain* TerrainGenerator::create_terrain()
 	return temp;
 }
 
-void TerrainGenerator::apply_terrain_feature(glm::vec3 * feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation)
+void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation)
 {
 	std::vector<int> visited_indices;
 	//for every vertical row, scan all elements
-	for (int z = 0; z < feature_resolution.y; z+=round(1))
+
+	for (glm::vec3 vert : feature)
 	{
-		for (int x = 0; x < feature_resolution.x; x+=round(1))
-		{
-			int terr_x = (x * feature_scale.x + feature_position.x);
-			int terr_z = (z * feature_scale.y + feature_position.y);
+		//get coordinates of that vert on terrain
+		int terr_x = (vert.x * feature_scale.x + feature_position.x);
+		int terr_z = (vert.z * feature_scale.y + feature_position.y);
 
-			int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
-			int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
-
-			//this ensures that rows don't get shifted and feature is properly translated
-			if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 ||
-				terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0)
-				continue;
-
-			int terr_ind = terr_rotatedz * terrain_resolution.y + terr_rotatedx;
+		//attempt rotation
+		int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
+		int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
 
 
-			//check if index was used and if it was, go to next iteration
+		//this ensures that rows don't get shifted and feature is properly translated
+		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 ||
+			terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0)
+			continue;
+
+		int terr_ind = terr_rotatedz * terrain_resolution.y + terr_rotatedx;
+
+		//check if index was used and if it was, go to next iteration
 			//this avoids adding values multiple times to same index
-			bool done = false;
-			for (int i = 0; i < visited_indices.size(); i++)
-				if (visited_indices.at(i) == terr_ind)
-				{
-					done = true;
-					break;
-				}
+		bool done = false;
+		for (int i = 0; i < visited_indices.size(); i++)
+			if (visited_indices.at(i) == terr_ind)
+			{
+				done = true;
+				break;
+			}
 
-			if (done)
-				continue;
+		if (done)
+			continue;
 
-			int feature_ind = z * feature_resolution.y + x;
+		int feature_ind = vert.z * feature_resolution.y + vert.x;
 
-			//just a safeguard
-			if (terr_ind < 0 || feature_ind < 0)
-				continue;
+		//just a safeguard
+		if (terr_ind < 0 || feature_ind < 0)
+			continue;
 
-			terrain[terr_ind].y += feature[feature_ind].y;			
-			visited_indices.push_back(terr_ind);
-		}
+		terrain[terr_ind].y += vert.y;
+		visited_indices.push_back(terr_ind);
 	}
-
-
-
-
-
-	////generate vertices
-	//for (GLuint x = 0; x < x_points; x++)
-	//{
-
-	//	for (GLuint z = 0; z < z_points; z++)
-	//	{
-	//		//calculate feature index at that terrain position
-	//		int feature_index = x * x_points + z;
-
-	//		int cur_index = x * x_points + z;
-	//		terrain[cur_index].y += feature[feature_index].y;
-
-	//		//std::cerr << cur_index << "v: " << verts[cur_index].x << " " << verts[cur_index].y << " " << verts[cur_index].z << std::endl;
-	//	}
-	//}
 
 
 }
 
 TerrainGenerator::TerrainGenerator()
 {
-	x_points = 50;
-	z_points = 50;
+	x_points = 100;
+	z_points = 100;
 
 	x_world = 20.f;
 	z_world = 20.f;

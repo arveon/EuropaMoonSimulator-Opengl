@@ -1,8 +1,8 @@
-#include "Ridge.h"
+#include "FeatureGenerator.h"
 
 
 
-glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width)
+std::vector<glm::vec3> FeatureGenerator::generate_ridge(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width)
 {
 	float mid_width = 0.2*ridge_width;//2 times smaller than ridge
 	ridge_width = 0.4*ridge_width;//max width can be only 0.4 of whole as it's double ridge
@@ -25,12 +25,14 @@ glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float 
 	steps.x = 1 / resolution.x;
 	steps.y = 1 / resolution.y;
 
+	int numpoints = 0;
 	for (int i = 0; i < resolution.y; i++)
 	{
 		for (int j = 0; j < resolution.x; j++)
 		{
 			float cur_y = i * steps.y;
 			int cur_index = i * (int)resolution.x + j;
+			verts[cur_index] = glm::vec3(j,1.f,i);
 			if (cur_y > top_start && cur_y < top_end)
 			{
 				float range_size = (top_end - top_start);
@@ -42,9 +44,7 @@ glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float 
 				{
 					verts[cur_index].y =  (cur_y - top_start) / range_size * peak_height / ridge_peak_close;
 				}
-					
-
-				//verts[cur_index].y = (cur_y - top_start) / range_size * peak_height;
+				numpoints++;
 			}
 			else if (cur_y > top_end && cur_y < bottom_start)
 			{
@@ -57,6 +57,7 @@ glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float 
 				{
 					verts[cur_index].y = (cur_y - top_end) / range_size * mid_low * 2;
 				}
+				numpoints++;
 			}
 			else if(cur_y > bottom_start && cur_y < bottom_end)
 			{
@@ -69,23 +70,25 @@ glm::vec3* Ridge::generate_ridge(glm::vec2 resolution, float peak_height, float 
 				{
 					verts[cur_index].y = (cur_y - bottom_start) / range_size * peak_height / ridge_peak_close;
 				}
-
-
-				//verts[cur_index].y = (cur_y - top_start) / range_size * peak_height;
+				numpoints++;
 			}
 			else
-				verts[cur_index].y = 0;
-
-			std::cerr << " " << verts[cur_index].y;
+				verts[cur_index] = glm::vec3(-999,-999,-999);
 		}
-		std::cerr << std::endl;
 	}
 
+	std::vector<glm::vec3> fin_verts;
+	for(int i = 0; i < resolution.y*resolution.x;i++)
+		if (verts[i].x != -999)
+		{
+			fin_verts.push_back(verts[i]);
+		}
 
-		return verts;
+	delete verts;
+	return fin_verts;
 }
 
-glm::vec3 * Ridge::generate_crater(glm::vec2 resolution, float height, float radius)
+std::vector<glm::vec3>  FeatureGenerator::generate_crater(glm::vec2 resolution, float height, float radius)
 {
 	glm::vec3* verts = nullptr;
 	verts = new glm::vec3[resolution.x * resolution.y];
@@ -100,23 +103,34 @@ glm::vec3 * Ridge::generate_crater(glm::vec2 resolution, float height, float rad
 		{
 			float dist_from_center_x = abs(j*step_x - 0.5);
 			float dist_from_center_y = abs(i*step_y - 0.5);
+			int id = i * (int)resolution.x + j;
 
-			verts[i*(int)resolution.x + j] = glm::vec3(i,0,j);
+
+			verts[id] = glm::vec3(j,1.f,i);
 			float dist_from_center = std::sqrt(pow(dist_from_center_x,2) + pow(dist_from_center_y,2));
 			if (dist_from_center < radius)
-				verts[i*(int)resolution.x + j].y = height;
+				verts[id].y = height;
+			else
+				verts[id].x = -999;
 		}
 
+	std::vector<glm::vec3> fin_verts;
+	for (int i = 0; i < resolution.y*resolution.x; i++)
+		if (verts[i].x != -999)
+		{
+			fin_verts.push_back(verts[i]);
+		}
 
+	delete verts;
 
-	return verts;
+	return fin_verts;
 }
 
-Ridge::Ridge()
+FeatureGenerator::FeatureGenerator()
 {
 }
 
 
-Ridge::~Ridge()
+FeatureGenerator::~FeatureGenerator()
 {
 }

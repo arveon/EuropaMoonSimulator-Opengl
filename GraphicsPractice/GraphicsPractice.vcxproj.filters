@@ -57,7 +57,7 @@
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Ridge.cpp">
+    <ClCompile Include="FeatureGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,7 +104,7 @@
     <ClInclude Include="Terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Ridge.h">
+    <ClInclude Include="FeatureGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
