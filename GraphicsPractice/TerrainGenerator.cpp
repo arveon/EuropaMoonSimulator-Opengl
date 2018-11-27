@@ -177,7 +177,7 @@ Terrain* TerrainGenerator::create_terrain()
 
 		}
 	}
-	apply_terrain_feature(ridge, verts, glm::vec2(0, 15), glm::vec2(1,0.5), ridge_resolution, glm::vec2(x_points,z_points), 30);
+	apply_terrain_feature(ridge, verts, glm::vec2(0, 0), glm::vec2(1,1), ridge_resolution, glm::vec2(x_points,z_points), 60);
 	/*apply_terrain_feature(crater, verts, glm::vec2(10, 10), glm::vec2(0.5, 0.7), ridge_resolution, glm::vec2(x_points, z_points), 0);
 	apply_terrain_feature(ridge, verts, glm::vec2(0, 30), glm::vec2(1, 0.5), ridge_resolution, glm::vec2(x_points, z_points), 0);
 	apply_terrain_feature(height, verts, glm::vec2(4, 4), glm::vec2(0.2, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);*/
@@ -211,6 +211,8 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 
 	for (glm::vec3 vert : feature)
 	{
+		static int prev_rotatex = 0;
+
 		//get coordinates of that vert on terrain
 		int terr_x = (vert.x * feature_scale.x + feature_position.x);
 		int terr_z = (vert.z * feature_scale.y + feature_position.y);
@@ -219,13 +221,16 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 		int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
 		int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
 
+		terr_x += terr_rotatedx;
+		terr_z += terr_rotatedx;
+
+
 
 		//this ensures that rows don't get shifted and feature is properly translated
-		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 ||
-			terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0)
+		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 )
 			continue;
 
-		int terr_ind = terr_rotatedz * terrain_resolution.y + terr_rotatedx;
+		int terr_ind = terr_z * terrain_resolution.y + terr_x;
 
 		//check if index was used and if it was, go to next iteration
 			//this avoids adding values multiple times to same index
@@ -240,23 +245,19 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 		if (done)
 			continue;
 
-		int feature_ind = vert.z * feature_resolution.y + vert.x;
-
 		//just a safeguard
-		if (terr_ind < 0 || feature_ind < 0)
+		if (terr_ind < 0)
 			continue;
 
 		terrain[terr_ind].y += vert.y;
 		visited_indices.push_back(terr_ind);
 	}
-
-
 }
 
 TerrainGenerator::TerrainGenerator()
 {
-	x_points = 100;
-	z_points = 100;
+	x_points = 50;
+	z_points = 50;
 
 	x_world = 20.f;
 	z_world = 20.f;
