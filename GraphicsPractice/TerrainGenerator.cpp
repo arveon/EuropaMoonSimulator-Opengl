@@ -194,13 +194,55 @@ Terrain* TerrainGenerator::create_terrain()
 	scale_heights(0, 1, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
 
+#pragma region ridges
 	//generate a few ridges with random heights
 	std::vector<std::vector<glm::vec3>> ridges;
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 10; i++)
 	{
-		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, rand() / (RAND_MAX + 0.4) + 0.3, - rand() / (RAND_MAX + 0.4) + 0.1, 0.5));
+		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, (rand() % 100 + 100) / 100, -(rand() % 100 + 100) / 100.f, 0.5));
 	}
 	//apply random ridges
+	for (int i = 0; i < 5; i++)
+	{
+		int type = 0;
+		glm::vec2 pos;
+		glm::vec2 scale;
+
+		type = rand() % 10;
+
+		if (type >= 5)
+		{
+			//large
+			scale = glm::vec2(1, (rand() % 50 + 50) / 100.f);
+		}
+		else
+		{
+			//medium size
+			scale = glm::vec2(1, (rand() % 50 + 20) / 100.f);
+		}
+		//else
+		//{
+		//	//small
+		//	scale = glm::vec2(1, (rand() % 30 + 10) / 100.f);
+		//}
+
+		pos = glm::vec2(25, rand() % z_points);
+
+		apply_terrain_feature(ridges.at(rand()%ridges.size()), verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0);
+	}
+#pragma endregion
+#pragma region craters
+	//generate a few craters with random heights
+	std::vector<std::vector<glm::vec3>> craters;
+	for (int i = 0; i < 5; i++)
+	{
+		bool positive = rand() % 2 == 1;
+		if(positive)
+			craters.push_back(FeatureGenerator::generate_crater(ridge_resolution, (rand()%100 + 200) /100.f, 0.5));
+		else
+			craters.push_back(FeatureGenerator::generate_crater(ridge_resolution, -(rand() % 100 + 200) / 100.f, 0.5));
+	}
+	//apply random craters
 	for (int i = 0; i < 10; i++)
 	{
 		int type = 0;
@@ -212,36 +254,25 @@ Terrain* TerrainGenerator::create_terrain()
 		if (type >= 9)
 		{
 			//large
-			scale = glm::vec2(1, rand() / (RAND_MAX + 0.4) + 0.6);
+			scale = glm::vec2((rand()%25 + 15.f)/100.f, (rand() % 25 + 15.f) / 100.f);
 		}
-		else if (type >= 6)
+		else if (type > 7)
 		{
 			//medium size
-			scale = glm::vec2(1, rand() / (RAND_MAX + 0.3) + 0.3);
+			scale = glm::vec2((rand() % 15 + 15.f) / 100.f, (rand() % 15 + 15.f) / 100.f);
 		}
 		else
 		{
 			//small
-			scale = glm::vec2(1, rand() / (RAND_MAX + 0.2) + 0.01);
-
-			if (type <= 3)
-				scale = glm::vec2(1, rand() / (RAND_MAX + 0.5) + 0.05);
+			scale = glm::vec2((rand() % 5 + 5.f) / 100.f, (rand() % 5 + 5.f) / 100.f);
 		}
 
+		//scale = glm::vec2(1, 1);
+		pos = glm::vec2(rand()%x_points, rand()%z_points);
 
-		scale = glm::vec2(1, 0.5);
-		int posy = rand() % z_points;
-		pos = glm::vec2(25, posy);
-		
-		
-		
-		apply_terrain_feature(ridges.at(rand()%ridges.size()), verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0);
+		apply_terrain_feature(craters.at(rand() % craters.size()), verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0, true);
 	}
-	//apply_terrain_feature(ridge, verts, glm::vec2(0, 0), glm::vec2(1, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);
-	//apply_terrain_feature(crater, verts, glm::vec2(0, 0), glm::vec2(1, 0.5), ridge_resolution, glm::vec2(x_points, z_points), 0);
-	//apply_terrain_feature(height, verts, glm::vec2(4, 4), glm::vec2(0.2, 0.2), ridge_resolution, glm::vec2(x_points, z_points), 0);
-
-
+#pragma endregion
 	
 	calculate_normals(normals, elements, verts);
 	
@@ -249,7 +280,7 @@ Terrain* TerrainGenerator::create_terrain()
 	return temp;
 }
 
-void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation)
+void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation,bool is_crater)
 {
 	std::vector<int> visited_indices;
 
@@ -296,6 +327,10 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 			continue;
 
  		terrain[terr_ind].y += vert.y;
+
+		if(is_crater)
+			terrain[terr_ind].y = vert.y;
+
 		visited_indices.push_back(terr_ind);
 	}
 }

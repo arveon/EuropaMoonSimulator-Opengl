@@ -26,7 +26,7 @@ float lightsource_strength = 0.1;
 
 vec4 sunlight = vec4(1,1,1,1);
 vec3 sun_direction = vec3(-1,30,0);
-float sun_strength = 0.5;
+float sun_strength = 0.3;
 
 
 void main()
@@ -54,7 +54,7 @@ void main()
 		//specular
 		vec3 normalised_vert = normalize(-fposition.xyz);
 		vec3 reflection = reflect(-to_light, fnormal_n);
-		vec4 specular = pow(max(dot(reflection, normalised_vert), 0), shininess) * specular_colour * lightsource_strength*0;
+		vec4 specular = pow(max(dot(reflection, normalised_vert), 0), shininess) * specular_colour * lightsource_strength;
 
 		float attenuation = 1;
 		if(attenuation_enabled)
