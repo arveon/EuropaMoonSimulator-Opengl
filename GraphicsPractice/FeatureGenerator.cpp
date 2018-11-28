@@ -7,7 +7,7 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge(glm::vec2 resolution, fl
 	float mid_width = 0.2*ridge_width;//2 times smaller than ridge
 	ridge_width = 0.4*ridge_width;//max width can be only 0.4 of whole as it's double ridge
 	mid_low = 0.2*mid_low;
-	peak_height = 0.1 + 0.1 * peak_height;// range of 0.6 - 1
+	//peak_height = 0.6 + 0.4 * peak_height;// range of 0.6 - 1
 	
 
 	float ridge_peak_close = 0.5;

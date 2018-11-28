@@ -19,13 +19,14 @@ uniform bool light_enabled;
 
 vec4 ambient_colour = vec4(0.2, 0.2, 0.2, 1);
 vec4 diffuse_colour = vec4(0.3, 0.3, 0.3, 1);
-vec4 specular_colour = vec4(0.5, 0.5, 0.5, 1);
+vec4 specular_colour = vec4(1, 1, 1, 1);
 
 float lightsource_strength = 0.1;
 
 
-vec4 sunlight = vec4(0.5,0.5,0.5,1);
-vec3 sun_direction = vec3(2,1,0);
+vec4 sunlight = vec4(1,1,1,1);
+vec3 sun_direction = vec3(-1,30,0);
+float sun_strength = 0.5;
 
 
 void main()
@@ -53,7 +54,7 @@ void main()
 		//specular
 		vec3 normalised_vert = normalize(-fposition.xyz);
 		vec3 reflection = reflect(-to_light, fnormal_n);
-		vec4 specular = pow(max(dot(reflection, normalised_vert), 0), shininess) * specular_colour * lightsource_strength;
+		vec4 specular = pow(max(dot(reflection, normalised_vert), 0), shininess) * specular_colour * lightsource_strength*0;
 
 		float attenuation = 1;
 		if(attenuation_enabled)
@@ -65,10 +66,11 @@ void main()
 		//calculate the sunlight components (directional light)
 		sun_direction = normalize(sun_direction);
 		float sun_diffuse = dot(fnormal_n, sun_direction);
-		diffuse += max(sun_diffuse,0)*sunlight;
+		diffuse += max(sun_diffuse,0) * sunlight * sun_strength;
 
-		outputColor = mix(attenuation*(diffuse + specular) + ambient_colour, texcolor, .6);
+		//outputColor = mix(attenuation*(diffuse + specular) + ambient_colour, texcolor, .6);
 		outputColor = (attenuation*(diffuse + specular) + ambient_colour)*texcolor;
+		//outputColor = diffuse;
 	}
 	else
 		outputColor = vert_colour;

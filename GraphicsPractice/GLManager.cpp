@@ -94,7 +94,7 @@ void GLManager::init()
 	//load required textures
 	try
 	{
-		terrain_tex = SOIL_load_OGL_texture("..\\textures\\asteroid1.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		terrain_tex = SOIL_load_OGL_texture("..\\textures\\ice.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
 		if (terrain_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
