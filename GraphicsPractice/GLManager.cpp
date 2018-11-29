@@ -125,6 +125,10 @@ void GLManager::init()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
+	terrain_res = glm::vec2(50, 50);
+	terrain_size = glm::vec2(50, 50);
+	terr_frequency = 4.f;
+
 	init_objects();
 }
 
@@ -134,10 +138,10 @@ void GLManager::init_objects()
 	//test.init(lightsource_shader);
 	snow.set_shader(&particle_shader);
 	snow.set_texture(snowflake);
-	snow.create_particles();
+	snow.create_particles(terrain_size.x+20, terrain_size.y+20,3,8,30);
 
 	terrain_gen.set_texture(terrain_tex);
-	terrain = terrain_gen.create_terrain();
+	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency);
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);
 	
@@ -199,8 +203,8 @@ void GLManager::update(float delta_time)
 	glm::vec3 campos = -camera.get_position();
 	campos.y += 2;
 	sun.move_to(glm::vec4(campos,1));
-	terrain->translate(glm::vec3(-10, -5, -10));
-	snow.translate(glm::vec3(-30, -5, -30));
+	terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
+	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());

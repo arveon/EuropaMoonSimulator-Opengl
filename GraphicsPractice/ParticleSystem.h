@@ -33,7 +33,7 @@ private:
 	glm::mat4 model_matrix;
 	glm::mat4 view_matrix;
 public:
-	void create_particles();
+	void create_particles(int max_x, int max_y, int min_velocity, int max_velocity, int start_height);
 	void draw_particles();
 	void update_particles(float dt);
 
@@ -51,7 +51,6 @@ public:
 
 	ParticleSystem() 
 	{
-		point_size = 10;
 		max_x = 90;
 		max_z = 90;
 		min_velocity = 3;

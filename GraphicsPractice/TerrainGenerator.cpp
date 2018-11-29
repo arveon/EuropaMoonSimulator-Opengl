@@ -138,8 +138,15 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
-Terrain* TerrainGenerator::create_terrain()
+Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, float perlin_freq)
 {
+	this->x_points = xpoints;
+	this->z_points = zpoints;
+	this->x_world = x_world;
+	this->z_world = z_world;
+	this->perlin_freq = perlin_freq;
+
+
 	GLuint num_verts = x_points * z_points;
 
 	glm::vec3* verts = new glm::vec3[num_verts];

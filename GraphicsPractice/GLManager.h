@@ -58,6 +58,10 @@ private:
 	Drawable* monkey;
 	Terrain* terrain;
 
+	glm::vec2 terrain_res;
+	glm::vec2 terrain_size;
+	float terr_frequency;
+
 	TerrainGenerator terrain_gen;
 	ParticleSystem snow;
 

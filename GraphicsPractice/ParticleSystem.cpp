@@ -2,8 +2,15 @@
 
 
 
-void ParticleSystem::create_particles()
+void ParticleSystem::create_particles(int max_x, int max_z, int min_velocity, int max_velocity, int start_height)
 {
+	this->max_x = max_x;
+	this->max_z = max_z;
+	this->min_velocity = min_velocity;
+	this->max_velocity = max_velocity;
+	this->height = start_height;
+
+
 	//create particles on same height, but with random x and z
 	std::vector<glm::vec3> positions;
 	for (int i = 0; i < max_particles; i++)
@@ -33,7 +40,6 @@ void ParticleSystem::draw_particles()
 	if(tex_id != -1)
 		glBindTexture(GL_TEXTURE_2D, tex_id);
 
-	glPointSize(7.f);
 	glDrawArrays(GL_POINTS, 0, particles.size());
 
 	if(tex_id != -1)
@@ -72,7 +78,6 @@ Particle ParticleSystem::generate_particle()
 	//generate vertex
 	glm::vec3 pos = glm::vec3(rand() % max_x, height, rand() % max_z);
 	float speed = (rand() % (max_velocity - min_velocity) + min_velocity)/100.f;
-	//std::cout << speed << std::endl;
 	//create an actual particle
 	Particle part =
 	{

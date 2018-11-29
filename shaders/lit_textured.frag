@@ -23,7 +23,7 @@ vec4 specular_colour = vec4(1, 1, 1, 1);
 
 const float fog_maxdist = 35.0;
 const float fog_mindist = 0.1;
-const float fog_density = 0.1;
+const float fog_density = 0.05;
 const vec4 fog_colour = vec4(0.4,0.4,0.6,1);
 
 float lightsource_strength = 0.1;
@@ -64,7 +64,7 @@ void main()
 		float attenuation = 1;
 		if(attenuation_enabled)
 		{
-			float k1 = 0.01f;
+			float k1 = 0.005f;
 			attenuation = 1.0 / (k1 + k1*distance_to_light + k1*pow(distance_to_light, 2));
 		}
 
