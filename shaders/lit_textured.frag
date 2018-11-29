@@ -21,6 +21,11 @@ vec4 ambient_colour = vec4(0.2, 0.2, 0.2, 1);
 vec4 diffuse_colour = vec4(0.3, 0.3, 0.3, 1);
 vec4 specular_colour = vec4(1, 1, 1, 1);
 
+const float fog_maxdist = 35.0;
+const float fog_mindist = 0.1;
+const float fog_density = 0.1;
+const vec4 fog_colour = vec4(0.4,0.4,0.6,1);
+
 float lightsource_strength = 0.1;
 
 
@@ -71,6 +76,11 @@ void main()
 		//outputColor = mix(attenuation*(diffuse + specular) + ambient_colour, texcolor, .6);
 		outputColor = (attenuation*(diffuse + specular) + ambient_colour)*texcolor;
 		//outputColor = diffuse;
+
+		float dist = length(fposition.xyz);
+		float fog_factor = 1.0 / exp(dist*fog_density);
+
+		outputColor = mix(fog_colour, outputColor, fog_factor);
 	}
 	else
 		outputColor = vert_colour;

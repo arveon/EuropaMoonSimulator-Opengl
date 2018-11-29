@@ -83,6 +83,9 @@ void GLManager::init()
 
 		normals_shader = ShaderManager::load_shader("../shaders/normals.vert","../shaders/normals.frag","../shaders/normals.geom");
 		normals_shader.init_shader(aspect_ratio, BASIC_SHADER);
+
+		particle_shader = ShaderManager::load_shader("../shaders/particle.vert", "../shaders/particle.frag", "../shaders/particle.geom");
+		particle_shader.init_shader(aspect_ratio, BASIC_SHADER);
 	}
 	catch (std::exception e)
 	{
@@ -99,6 +102,11 @@ void GLManager::init()
 		if (terrain_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
+		snowflake = SOIL_load_OGL_texture("..\\textures\\snowflake.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+
+		if (terrain_tex == 0)
+			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
+
 		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
 		if (loc >= 0) glUniform1i(loc, 0);
 	}
@@ -109,7 +117,7 @@ void GLManager::init()
 
 	//enable depth texting
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0.4, .4, .6, 1);
 
 	// Enable face culling. This will cull the back faces of all
 	// triangles. Be careful to ensure that triangles are drawn
@@ -124,6 +132,9 @@ void GLManager::init()
 void GLManager::init_objects()
 {
 	//test.init(lightsource_shader);
+	snow.set_shader(&particle_shader);
+	snow.set_texture(snowflake);
+	snow.create_particles();
 
 	terrain_gen.set_texture(terrain_tex);
 	terrain = terrain_gen.create_terrain();
@@ -167,9 +178,10 @@ void GLManager::update(float delta_time)
 	cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
 
 	//set projection matrix in all shaders
-	glm::mat4 projection = glm::perspective(glm::radians(12.f), aspect_ratio, 0.1f, 200.f);
+	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 200.f);
 	basic_shader.set_projection_matrix(projection);
 	lightsource_shader.set_projection_matrix(projection);
+	particle_shader.set_projection_matrix(projection);
 	unlit_texture_shader.set_projection_matrix(projection);
 	normals_shader.set_projection_matrix(projection);
 
@@ -178,13 +190,17 @@ void GLManager::update(float delta_time)
 	terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
+	snow.set_view_matrix(camera.get_view_matrix());
 	//monkey->set_draw_normals(draw_normals);
 	terrain->set_draw_normals(draw_normals);
 
 
 	//manipulate and draw other objects
-	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
+	glm::vec3 campos = -camera.get_position();
+	campos.y += 2;
+	sun.move_to(glm::vec4(campos,1));
 	terrain->translate(glm::vec3(-10, -5, -10));
+	snow.translate(glm::vec3(-30, -5, -30));
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
@@ -202,6 +218,8 @@ void GLManager::update(float delta_time)
 	basic_shader.set_texture_enabled(texture_enabled);
 	basic_shader.set_colour_enabled(colour_enabled);
 	basic_shader.set_lighting_enabled(light_enabled);
+
+	snow.update_particles(delta_time);
 }
 
 void GLManager::render()
@@ -209,6 +227,7 @@ void GLManager::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	terrain->draw();
 	sun.draw();
+	snow.draw_particles();
 }
 
 void GLManager::terminate()
@@ -345,8 +364,8 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 			prev_ypos = ypos;
 		}
 
-		cursor_movement.x = floor(xpos) - prev_xpos;
-		cursor_movement.y = floor(ypos) - prev_ypos;
+		cursor_movement.x = (floor(xpos) - prev_xpos)*2;
+		cursor_movement.y = (floor(ypos) - prev_ypos)*2;
 	}
 
 	prev_xpos = floor(xpos);

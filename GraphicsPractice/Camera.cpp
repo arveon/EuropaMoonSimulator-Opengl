@@ -11,7 +11,7 @@ void Camera::update(float dt, glm::vec2 cursor_deltas)
 	if (rotation.x > 90)
 		rotation.x = 90;
 	else if (rotation.x < -90)
-		rotation.x = 0;
+		rotation.x = -90;
 
 	//calculate strafe and forward directions of the eye vector (new position)
 	glm::vec3 forward(view_matrix[0][2], view_matrix[1][2], view_matrix[2][2]);

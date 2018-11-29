@@ -29,10 +29,6 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 	}
 
 	load_into_memory();
-
-	
-
-	//std::cerr << "END OF OBJECT" << std::endl;
 }
 
 Drawable::~Drawable()
@@ -47,7 +43,6 @@ void Drawable::load_into_memory()
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, verts, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//std::cerr << "19v: " << verts[19].x << " " << verts[19].y << " " << verts[19].z << std::endl;
 
 	//load indices into memory
 	glGenBuffers(1, &index_buffer_id);
@@ -58,9 +53,6 @@ void Drawable::load_into_memory()
 	//load vertex colours into memory
 	if (colours_enabled)
 	{
-		/*for (int i = 0; i < num_verts; i += 1)
-			std::cerr << colours[i].x << " " << colours[i].y << " " << colours[i].z << std::endl;*/
-
 		glGenBuffers(1, &colour_buffer_id);
 		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * num_verts, colours, GL_STATIC_DRAW);

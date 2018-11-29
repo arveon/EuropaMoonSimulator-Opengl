@@ -32,6 +32,8 @@
 #include "TerrainGenerator.h"
 #include "Terrain.h"
 
+#include "ParticleSystem.h"
+
 #include "Camera.h"
 
 class GLManager
@@ -44,8 +46,10 @@ private:
 	Shader lightsource_shader = NULL;
 	Shader unlit_texture_shader = NULL;
 	Shader normals_shader = NULL;
+	Shader particle_shader = NULL;
 
 	GLuint terrain_tex;
+	GLuint snowflake;
 
 	Cube test;
 	
@@ -55,6 +59,7 @@ private:
 	Terrain* terrain;
 
 	TerrainGenerator terrain_gen;
+	ParticleSystem snow;
 
 	static glm::vec2 cursor_movement;
 	static Camera camera;

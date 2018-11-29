@@ -33,6 +33,7 @@ public:
 	void reset();
 
 	glm::mat4 get_view_matrix() { return view_matrix; }
+	glm::vec3 get_position() { return movement; }
 	Camera();
 	~Camera();
 };

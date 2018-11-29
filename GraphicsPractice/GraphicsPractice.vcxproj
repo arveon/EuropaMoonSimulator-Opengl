@@ -133,6 +133,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjectLoader.cpp" />
     <ClCompile Include="FeatureGenerator.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="Lightsource.h" />
     <ClInclude Include="ObjectLoader.h" />
     <ClInclude Include="FeatureGenerator.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Sphere.h" />
@@ -165,6 +167,9 @@
     <None Include="..\shaders\normals.frag" />
     <None Include="..\shaders\normals.geom" />
     <None Include="..\shaders\normals.vert" />
+    <None Include="..\shaders\particle.frag" />
+    <None Include="..\shaders\particle.geom" />
+    <None Include="..\shaders\particle.vert" />
     <None Include="..\shaders\unlit_textured.frag" />
     <None Include="..\shaders\unlit_textured.vert" />
   </ItemGroup>
