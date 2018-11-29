@@ -81,7 +81,7 @@ StyleCopReport.xml
 *_h.h
 *.ilk
 *.meta
-*.obj
+GraphicsPractice/*.obj
 *.iobj
 *.pch
 *.pdb
