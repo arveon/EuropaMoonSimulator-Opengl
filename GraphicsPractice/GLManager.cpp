@@ -151,7 +151,8 @@ void GLManager::loop()
 		float delta_time = unaffected_time * speed;
 		prev_time = glfwGetTime();
 
-		render(delta_time);
+		update(delta_time);
+		render();
 		glfwSwapBuffers(win);
 		glfwPollEvents();
 
@@ -160,10 +161,8 @@ void GLManager::loop()
 	}
 }
 
-void GLManager::render(float delta_time)
+void GLManager::update(float delta_time)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	camera.update(unaffected_time, cursor_movement);
 	cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
 
@@ -182,13 +181,10 @@ void GLManager::render(float delta_time)
 	//monkey->set_draw_normals(draw_normals);
 	terrain->set_draw_normals(draw_normals);
 
+
 	//manipulate and draw other objects
 	sun.shift(glm::vec3(light_movement.x*delta_time, light_movement.y*delta_time, light_movement.z*delta_time));
 	terrain->translate(glm::vec3(-10, -5, -10));
-	
-	//test.draw();
-	terrain->draw();
-	sun.draw();
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
@@ -196,7 +192,7 @@ void GLManager::render(float delta_time)
 	//apply scene changes if specific flags were set
 	if (reset)
 		reset_scene();
-	if(!show_cursor)
+	if (!show_cursor)
 		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else
 		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -206,8 +202,13 @@ void GLManager::render(float delta_time)
 	basic_shader.set_texture_enabled(texture_enabled);
 	basic_shader.set_colour_enabled(colour_enabled);
 	basic_shader.set_lighting_enabled(light_enabled);
+}
 
-
+void GLManager::render()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	terrain->draw();
+	sun.draw();
 }
 
 void GLManager::terminate()

@@ -73,6 +73,9 @@ private:
 	static bool draw_normals;
 	static bool close;
 
+	unsigned int depthMapFBO;
+	unsigned int depthMap;
+
 	void reset_scene();
 public:
 	GLManager();
@@ -80,7 +83,8 @@ public:
 
 	void init();
 	void loop();
-	void render(float delta_time);
+	void update(float delta_time);
+	void render();
 	void terminate();
 
 	static void resize_callback(GLFWwindow* window, int width, int height);
