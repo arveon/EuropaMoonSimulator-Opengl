@@ -4,11 +4,12 @@
 
 Drawable * ObjectLoader::load_object(std::string obj_path)
 {
+	std::cerr << "Loading obj: " << obj_path << std::endl;
 	Drawable* res = new Drawable();
 	tinyobj::attrib_t obj;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	int num_verts, num_normals, num_tex_coords = 0;
+	int num_verts, num_normals, num_tex_coords, num_colours = 0;
 
 	glm::vec4 *colors = nullptr;
 	glm::vec3 *vertices, *normals;
@@ -27,7 +28,8 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	
 	num_verts = obj.vertices.size() / 3;
 	num_normals = obj.normals.size() / 3;
-	num_tex_coords = obj.texcoords.size() / 3;
+	num_tex_coords = obj.texcoords.size() / 2;
+	num_colours = obj.colors.size() / 3;
 
 	//if there are no vertices defined, no point in loading anything else
 	if (num_verts <= 0)
@@ -49,7 +51,10 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 
 	//copy stuff if present
 	if (num_normals <= 0)
+	{
 		std::cout << "No normals." << std::endl;
+		res->tex_enabled = false;
+	}
 	else
 	{
 		normals = new glm::vec3[obj.normals.size()];
@@ -62,13 +67,16 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 		res->normals_enabled = true;
 	}
 
-	if (num_tex_coords<= 0)
+	if (num_tex_coords <= 0)
+	{
 		std::cout << "No tex coords." << std::endl;
+		res->tex_enabled = false;
+	}
 	else
 	{
 		texcoords = new glm::vec2[obj.texcoords.size()];
 		int counter = 0;
-		for (unsigned int i = 0; i < obj.normals.size(); i += 2)
+		for (unsigned int i = 0; i < obj.texcoords.size(); i += 2)
 		{
 			texcoords[counter] = glm::vec2(obj.texcoords[i], obj.texcoords[i + 1]);
 			counter++;
@@ -77,19 +85,27 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 		res->tex_enabled = true;
 	}
 
-	colors = new glm::vec4[obj.colors.size()];
-	counter = 0;
-	for (unsigned int i = 0; i < obj.colors.size(); i += 4)
+	if (num_colours <= 0)
 	{
-		colors[counter] = glm::vec4(obj.colors[i], obj.colors[i + 1], obj.colors[i + 2], obj.colors[i + 3]);
-		counter++;
+		std::cout << "No colours." << std::endl;
+		res->tex_enabled = false;
 	}
-	//std::copy(obj.colors.begin(), obj.colors.end(), colors);
+	else
+	{
+		colors = new glm::vec4[obj.colors.size()];
+		counter = 0;
+		for (unsigned int i = 0; i < obj.colors.size() - 3; i += 4)
+		{
+			colors[counter] = glm::vec4(obj.colors[i], obj.colors[i + 1], obj.colors[i + 2], obj.colors[i + 3]);
+			counter++;
+		}
+		res->colours_enabled = true;
+		//std::copy(obj.colors.begin(), obj.colors.end(), colors);
+	}
 
 
 	int num_indices;
 	parse_indices(shapes, &indices, &num_indices);
-
 	res->init(vertices, obj.vertices.size(), colors, indices, num_indices, normals, texcoords);
 	return res;
 }

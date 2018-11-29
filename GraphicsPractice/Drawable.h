@@ -42,8 +42,10 @@ protected:
 
 	int verts_in_line = 0;
 
+	GLuint triangle_winding = GL_CW;
+
 	void load_into_memory();
-	void draw_object(int mode = 1);
+	void draw_object(int mode = 1, GLuint triangle_winding = GL_CW);
 public:
 	Drawable() {};
 	~Drawable();
@@ -63,6 +65,7 @@ public:
 	void draw();
 	void set_model_matrix(glm::mat4 model_matrix);
 	void set_view_matrix(glm::mat4 view_matrix);
+	void set_triangle_winding(GLuint winding) { this->triangle_winding = winding; }
 
 	glm::mat4 get_model_matrix() { return model_matrix; }
 	glm::vec3 get_center_position() { return center_position; }

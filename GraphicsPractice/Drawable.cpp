@@ -78,7 +78,7 @@ void Drawable::load_into_memory()
 	}
 }
 
-void Drawable::draw_object(int mode)
+void Drawable::draw_object(int mode, GLuint winding)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glEnableVertexAttribArray(0);
@@ -106,9 +106,10 @@ void Drawable::draw_object(int mode)
 
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 	}
+		
 
 	// Define triangle winding as counter-clockwise
-	glFrontFace(GL_CW);
+	glFrontFace(winding);
 	glPointSize(5.f);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
@@ -153,9 +154,10 @@ void Drawable::draw()
 {
 	shader_program.set_model_view_matrix(view_matrix * model_matrix);
 	normals_shader.set_model_view_matrix(view_matrix * model_matrix);
+	shader_program.set_texture_enabled(tex_enabled);
 
 	glUseProgram(shader_program.get_program_id());	
-	draw_object(DRAW_TRIANGLES_MODE);
+	draw_object(DRAW_TRIANGLES_MODE, triangle_winding);
 	glUseProgram(0);
 
 	if (draw_normals)

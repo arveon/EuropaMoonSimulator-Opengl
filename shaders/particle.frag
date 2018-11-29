@@ -6,7 +6,7 @@
 in vec4 fcolour;
 in vec3 fposition;
 
-const float fog_density = 0.05;
+const float fog_density = 0.025;
 const vec4 fog_colour = vec4(0.4,0.4,0.6,1);
 
 in vec2 uv;

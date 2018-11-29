@@ -140,6 +140,7 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 
 Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, float perlin_freq)
 {
+	std::cerr << "Generating terrain:" << std::endl;
 	this->x_points = xpoints;
 	this->z_points = zpoints;
 	this->x_world = x_world;
@@ -158,9 +159,6 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 	//allocate and set to 0
 	GLfloat* noise = TerrainGenerator::calculate_noise(x_points, z_points, octaves, perlin_freq, perlin_scale);
 	glm::vec2 ridge_resolution = glm::vec2(x_points, z_points);
-	
-	/*std::vector<glm::vec3> crater = Ridge::generate_crater(ridge_resolution, -0.2, 0.5);
-	std::vector<glm::vec3> height = Ridge::generate_crater(ridge_resolution, 0.2, 0.5);*/
 
 	GLfloat xpos_start = -x_world / 2.f;
 	GLfloat zpos_start = -z_world / 2.f;
@@ -204,13 +202,19 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 #pragma region ridges
 	//generate a few ridges with random heights
 	std::vector<std::vector<glm::vec3>> ridges;
-	for (int i = 0; i < 10; i++)
+	std::cerr << "Generating ridges:" << std::endl;
+	int num_ridges = 20;
+	for (int i = 0; i < num_ridges; i++)
 	{
-		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, (rand() % 100 + 100) / 100, -(rand() % 100 + 100) / 100.f, 0.5));
+		std::cerr << i << " of " << num_ridges << std::endl;
+		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, (rand() % 100 + 100) / 100, -(rand() % 100 + 200) / 100.f, 0.5));
 	}
 	//apply random ridges
-	for (int i = 0; i < 5; i++)
+	std::cerr << "Applying ridges" << std::endl;
+	int num_ridges_placed = 20;
+	for (int i = 0; i < num_ridges_placed; i++)
 	{
+		std::cerr << i << " of " << num_ridges_placed << std::endl;
 		int type = 0;
 		glm::vec2 pos;
 		glm::vec2 scale;
@@ -220,12 +224,12 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 		if (type >= 5)
 		{
 			//large
-			scale = glm::vec2(1, (rand() % 50 + 50) / 100.f);
+			scale = glm::vec2(1, (rand() % 20 + 10) / 100.f);
 		}
 		else
 		{
 			//medium size
-			scale = glm::vec2(1, (rand() % 50 + 20) / 100.f);
+			scale = glm::vec2(1, (rand() % 30 + 5) / 100.f);
 		}
 		//else
 		//{
@@ -233,16 +237,19 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 		//	scale = glm::vec2(1, (rand() % 30 + 10) / 100.f);
 		//}
 
-		pos = glm::vec2(25, rand() % z_points);
+		pos = glm::vec2(x_points/2, rand() % z_points);
 
 		apply_terrain_feature(ridges.at(rand()%ridges.size()), verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0);
 	}
 #pragma endregion
 #pragma region craters
+	std::cerr << "Generating craters:" << std::endl;
 	//generate a few craters with random heights
 	std::vector<std::vector<glm::vec3>> craters;
-	for (int i = 0; i < 5; i++)
+	int num_craters = 10;
+	for (int i = 0; i < num_craters; i++)
 	{
+		std::cerr << i << " of " << num_craters << std::endl;
 		bool positive = rand() % 2 == 1;
 		if(positive)
 			craters.push_back(FeatureGenerator::generate_crater(ridge_resolution, (rand()%100 + 200) /100.f, 0.5));
@@ -250,8 +257,11 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 			craters.push_back(FeatureGenerator::generate_crater(ridge_resolution, -(rand() % 100 + 200) / 100.f, 0.5));
 	}
 	//apply random craters
-	for (int i = 0; i < 10; i++)
+	int num_craters_applied = 10;
+	std::cerr << "Applying craters" << std::endl;
+	for (int i = 0; i < num_craters_applied; i++)
 	{
+		std::cerr << i << " of " << num_craters_applied << std::endl;
 		int type = 0;
 		glm::vec2 pos;
 		glm::vec2 scale;
@@ -261,7 +271,7 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 		if (type >= 9)
 		{
 			//large
-			scale = glm::vec2((rand()%25 + 15.f)/100.f, (rand() % 25 + 15.f) / 100.f);
+			scale = glm::vec2((rand()%30 + 20.f)/100.f, (rand() % 30 + 20.f) / 100.f);
 		}
 		else if (type > 7)
 		{
@@ -271,7 +281,7 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 		else
 		{
 			//small
-			scale = glm::vec2((rand() % 5 + 5.f) / 100.f, (rand() % 5 + 5.f) / 100.f);
+			scale = glm::vec2((rand() % 10 + 10.f) / 100.f, (rand() % 10 + 10.f) / 100.f);
 		}
 
 		//scale = glm::vec2(1, 1);
@@ -279,8 +289,16 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 
 		apply_terrain_feature(craters.at(rand() % craters.size()), verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0, true);
 	}
+
+	//put a height in the centre
+	std::vector<glm::vec3> central_crater = FeatureGenerator::generate_crater(ridge_resolution, 3.0f, 0.5f);
+	glm::vec2 scale = glm::vec2(0.1, 0.1);
+	glm::vec2 pos = glm::vec2(x_points / 2, z_points / 2);
+	apply_terrain_feature(central_crater, verts, pos, scale, ridge_resolution, glm::vec2(x_points, z_points), 0, true);
+
+
 #pragma endregion
-	
+	std::cerr << "Calculating terrain normals" << std::endl;
 	calculate_normals(normals, elements, verts);
 	
 	Terrain* temp = new Terrain(x_points, verts, (int)num_verts, colours, &(elements->at(0)), elements->size(), normals,texcoords, terrain_texture);
@@ -289,7 +307,13 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 
 void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation,bool is_crater)
 {
-	std::vector<int> visited_indices;
+	bool** visited = new bool*[terrain_resolution.y];
+	for (int i = 0; i < terrain_resolution.y; i++)
+	{
+		visited[i] = new bool[terrain_resolution.x];
+		for (int j = 0; j < terrain_resolution.x; j++)
+			visited[i][j] = false;
+	}
 
 	glm::vec2 center = glm::vec2(feature_resolution.x / 2, feature_resolution.y / 2);
 
@@ -298,36 +322,34 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 		static int prev_rotatex = 0;
 
 		//get coordinates of that vert on terrain
-		/*int terr_x = ((vert.x-center.x) * feature_scale.x + feature_position.x);
-		int terr_z = ((vert.z-center.y) * feature_scale.y + feature_position.y);*/
 		int terr_x = (vert.x * feature_scale.x + feature_position.x - center.x*feature_scale.x);
 		int terr_z = (vert.z * feature_scale.y + feature_position.y - center.y*feature_scale.y);
 
-		int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
-		int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
+		/*int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
+		int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));*/
 
 		//this ensures that rows don't get shifted and feature is properly translated
-		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 ||
-			terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0)
+		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 /*||
+			terr_rotatedx >= terrain_resolution.x || terr_rotatedz >= terrain_resolution.y || terr_rotatedx < 0 || terr_rotatedz < 0*/)
 			continue;
 		
 		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0 )
 			continue;
 
-		int terr_ind = terr_rotatedz * terrain_resolution.y + terr_rotatedx;
+		int terr_ind = terr_z * terrain_resolution.y + terr_x;
 
-		//check if index was used and if it was, go to next iteration
-			//this avoids adding values multiple times to same index
-		bool done = false;
-		for (int i = 0; i < visited_indices.size(); i++)
-			if (visited_indices.at(i) == terr_ind)
-			{
-				done = true;
-				break;
-			}
+		//int y = (int)std::floor(terr_ind / terrain_resolution.y);
+		//int x = terr_ind % (int)terrain_resolution.x;
 
-		if (done)
+		//y = std::floor(vert.z);
+		//x = std::floor(vert.x);
+		if (visited[terr_z][terr_x])
 			continue;
+		else
+			visited[terr_z][terr_x] = true;
+
+		//if (done)
+		//	continue;
 
 		//just a safeguard
 		if (terr_ind < 0)
@@ -338,8 +360,14 @@ void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm
 		if(is_crater)
 			terrain[terr_ind].y = vert.y;
 
-		visited_indices.push_back(terr_ind);
+		/*visited_indices.push_back(terr_ind);*/
 	}
+
+	for (int i = 0; i < terrain_resolution.y; i++)
+	{
+		delete visited[i];
+	}
+	delete visited;
 }
 
 TerrainGenerator::TerrainGenerator()

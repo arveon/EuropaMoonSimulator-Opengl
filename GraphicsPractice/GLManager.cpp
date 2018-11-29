@@ -125,8 +125,8 @@ void GLManager::init()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	terrain_res = glm::vec2(50, 50);
-	terrain_size = glm::vec2(50, 50);
+	terrain_res = glm::vec2(200, 200);
+	terrain_size = glm::vec2(200, 200);
 	terr_frequency = 4.f;
 
 	init_objects();
@@ -145,11 +145,12 @@ void GLManager::init_objects()
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);
 	
-	//monkey = ObjectLoader::load_object("../models/monkey_normals.obj");
-	/*monkey->set_shader(basic_shader);
-	monkey->set_normal_shader(normals_shader);*/
+	monkey = ObjectLoader::load_object("../models/venusl.obj");
+	monkey->set_shader(basic_shader);
+	monkey->set_normal_shader(normals_shader);
+	monkey->set_triangle_winding(GL_CCW);
+
 	basic_shader.set_shininess(1.f);
-	//monkey->colours_enabled = false;
 
 	sun = Lightsource(lightsource_shader);
 	sun.set_scale(glm::vec3( .3f, .3f, .3f));
@@ -190,12 +191,12 @@ void GLManager::update(float delta_time)
 	normals_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
-	//monkey->set_view_matrix(camera.get_view_matrix());
+	monkey->set_view_matrix(camera.get_view_matrix());
 	terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
 	snow.set_view_matrix(camera.get_view_matrix());
-	//monkey->set_draw_normals(draw_normals);
+	monkey->set_draw_normals(draw_normals);
 	terrain->set_draw_normals(draw_normals);
 
 
@@ -205,6 +206,9 @@ void GLManager::update(float delta_time)
 	sun.move_to(glm::vec4(campos,1));
 	terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
+	monkey->translate(glm::vec3(0, -0.3, 0));
+	monkey->scale(glm::vec3(0.002, 0.002, 0.002));
+	
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
@@ -230,6 +234,7 @@ void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	terrain->draw();
+	monkey->draw();
 	sun.draw();
 	snow.draw_particles();
 }

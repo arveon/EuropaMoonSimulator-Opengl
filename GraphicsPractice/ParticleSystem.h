@@ -19,7 +19,7 @@ struct Particle
 class ParticleSystem
 {
 private:
-	int max_particles = 1000;
+	int max_particles = 5000;
 	int max_x, max_z;
 	int height;
 	int min_velocity, max_velocity;
