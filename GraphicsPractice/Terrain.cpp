@@ -1,3 +1,7 @@
+/*	by Aleksejs Loginovs - November 2018
+	represents terrain drawable
+*/
+
 #include "Terrain.h"
 
 

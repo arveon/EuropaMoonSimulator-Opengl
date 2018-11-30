@@ -1,3 +1,6 @@
+/*	by Aleksejs Loginovs - November 2018 
+	adapted from Iain Martin's normals example code
+*/
 #version 400
 
 layout(location=0) in vec3 position;

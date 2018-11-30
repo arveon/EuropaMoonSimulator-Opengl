@@ -1,4 +1,9 @@
+/*	by Aleksejs Loginovs - November 2018 
+	adapted from Iain Martin's normals example code
+*/
+
 #version 400 core
+
 layout(points) in;
 layout(line_strip, max_vertices=2) out;
 

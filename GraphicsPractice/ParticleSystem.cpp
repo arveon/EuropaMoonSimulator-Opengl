@@ -1,3 +1,7 @@
+/*	by Aleksejs Loginovs - November 2018
+	manages snow particles
+*/
+
 #include "ParticleSystem.h"
 
 
@@ -16,7 +20,7 @@ void ParticleSystem::create_particles(int max_x, int max_z, int min_velocity, in
 	for (int i = 0; i < max_particles; i++)
 	{
 		Particle part = generate_particle();
-		//add to list of vertices
+		//add to list of vertices and list of particles
 		positions.push_back(part.pos);
 		particles.push_back(part);
 	}
@@ -51,16 +55,17 @@ void ParticleSystem::draw_particles()
 void ParticleSystem::update_particles(float dt)
 {
 	shader->set_model_view_matrix(view_matrix*model_matrix);
-	//std::cout << particles.at(0).time_lived << std::endl;
+	
 	std::vector<glm::vec3> positions;
 	for (int i = 0; i < max_particles; i++)
 	{
 		particles.at(i).time_lived += dt;
 		if (particles.at(i).time_lived >= particles.at(i).lifespan)
-		{
+		{//if particle should die, remove it and create a new one
 			particles.erase(particles.begin() + i);
 			particles.push_back(generate_particle());
 		}
+		//update particle position (falling down and x&z should follow a periodic function)
 		particles.at(i).pos -= particles.at(i).velocity * dt;
 		particles.at(i).pos.x += sin(particles.at(i).time_lived/100)/10;
 		particles.at(i).pos.z += cos(particles.at(i).time_lived / 100) / 10;

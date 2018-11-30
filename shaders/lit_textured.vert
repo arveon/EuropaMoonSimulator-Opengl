@@ -1,6 +1,6 @@
 #version 420
 /* by Aleksejs Loginovs - October 2018 */
-//lit and textured vertex shader
+//lit and textured vertex shader with fog
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 colour;

@@ -1,3 +1,6 @@
+/*	by Aleksejs Loginovs - November 2018
+	adapted from Iain Martin's object loading example code
+*/
 #include "ObjectLoader.h"
 
 

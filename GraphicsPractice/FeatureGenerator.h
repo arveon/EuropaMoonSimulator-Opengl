@@ -1,3 +1,4 @@
+/* by Aleksejs Loginovs - November 2018 */
 #pragma once
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>

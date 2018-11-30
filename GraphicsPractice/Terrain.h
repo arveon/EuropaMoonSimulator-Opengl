@@ -1,3 +1,4 @@
+/* by Aleksejs Loginovs - November 2018 */
 #pragma once
 #include "Drawable.h"
 class Terrain :

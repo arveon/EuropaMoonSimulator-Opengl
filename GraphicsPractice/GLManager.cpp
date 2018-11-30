@@ -117,7 +117,7 @@ void GLManager::init()
 
 	//enable depth texting
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.4, .4, .6, 1);
+	glClearColor(0.4f, .4f, .6f, 1);
 
 	// Enable face culling. This will cull the back faces of all
 	// triangles. Be careful to ensure that triangles are drawn
@@ -127,7 +127,10 @@ void GLManager::init()
 
 	terrain_res = glm::vec2(200, 200);
 	terrain_size = glm::vec2(200, 200);
-	terr_frequency = 4.f;
+	terr_frequency = 8;
+	terr_scale = 8;
+	terr_octaves = 8;
+
 
 	init_objects();
 }
@@ -141,19 +144,21 @@ void GLManager::init_objects()
 	snow.create_particles(terrain_size.x+20, terrain_size.y+20,3,8,30);
 
 	terrain_gen.set_texture(terrain_tex);
-	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency);
+	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency,terr_scale, terr_octaves);
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);
 	
-	monkey = ObjectLoader::load_object("../models/venusl.obj");
-	monkey->set_shader(basic_shader);
-	monkey->set_normal_shader(normals_shader);
-	monkey->set_triangle_winding(GL_CCW);
+	statue = ObjectLoader::load_object("../models/venusl.obj");
+	statue->set_shader(basic_shader);
+	statue->set_normal_shader(normals_shader);
+	statue->set_triangle_winding(GL_CCW);
 
-	basic_shader.set_shininess(1.f);
+	basic_shader.set_shininess(8.f);
 
 	sun = Lightsource(lightsource_shader);
 	sun.set_scale(glm::vec3( .3f, .3f, .3f));
+
+	GLManager::print_controls();
 }
 
 void GLManager::loop()
@@ -191,12 +196,12 @@ void GLManager::update(float delta_time)
 	normals_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
-	monkey->set_view_matrix(camera.get_view_matrix());
+	statue->set_view_matrix(camera.get_view_matrix());
 	terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
 	snow.set_view_matrix(camera.get_view_matrix());
-	monkey->set_draw_normals(draw_normals);
+	statue->set_draw_normals(draw_normals);
 	terrain->set_draw_normals(draw_normals);
 
 
@@ -206,8 +211,8 @@ void GLManager::update(float delta_time)
 	sun.move_to(glm::vec4(campos,1));
 	terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
-	monkey->translate(glm::vec3(0, -0.3, 0));
-	monkey->scale(glm::vec3(0.002, 0.002, 0.002));
+	statue->translate(glm::vec3(0, -0.3, 0));
+	statue->scale(glm::vec3(0.002, 0.002, 0.002));
 	
 
 	//set the light position in lit shader
@@ -234,7 +239,7 @@ void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	terrain->draw();
-	monkey->draw();
+	statue->draw();
 	sun.draw();
 	snow.draw_particles();
 }
@@ -379,6 +384,21 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 
 	prev_xpos = floor(xpos);
 	prev_ypos = floor(ypos);
+}
+
+void GLManager::print_controls()
+{
+	std::cout << "Hello and welcome to the snowy scene. This is a small procedurally generated piece of land." << std::endl;
+	std::cout << "The controls are:" << std::endl;
+	std::cout << "WASD to move" << std::endl;
+	std::cout << "CTRL to move down on Y axis" << std::endl;
+	std::cout << "Space to move up on Y axis" << std::endl;
+	std::cout << "Move mouse to look around" << std::endl;
+	std::cout << "R - to teleport to the start position if you ever get lost" << std::endl;
+	std::cout << "X - to toggle attenuation" << std::endl;
+	std::cout << "T - to toggle texture" << std::endl;
+	std::cout << "TAB - to capture/uncapture mouse" << std::endl;
+	std::cout << "Esc - to exit the simulation" << std::endl;
 }
 
 

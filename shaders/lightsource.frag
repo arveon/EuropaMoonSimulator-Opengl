@@ -1,5 +1,5 @@
 /* by Aleksejs Loginovs - October 2018 */
-// Minimal fragment shader with fixed output colour
+// Minimal fragment shader with fixed output colour and fog
 
 #version 420
 

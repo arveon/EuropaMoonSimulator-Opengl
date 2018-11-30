@@ -1,6 +1,5 @@
 /* by Aleksejs Loginovs - October 2018 */
-// Minimal fragment shader with fixed output colour
-
+// Particle fragment shader with fog
 #version 420
 
 in vec4 fcolour;
@@ -20,12 +19,13 @@ void main()
 	outputColor = mix(fcolour,tex_clr,0.5f);
 	float thresh = 0.2f;
 	if(tex_clr.r < thresh && tex_clr.g < thresh && tex_clr.b < thresh)
-	{	
+	{	//discard all dark fragments
 		discard;
 	}
 
 	outputColor=tex_clr;
 
+	//add in fog
 	float dist = length(fposition.xyz);
 	float fog_factor = pow(1.0 / exp(dist*fog_density),2);
 

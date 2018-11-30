@@ -1,4 +1,4 @@
-/* by Aleksejs Loginovs - October 2018 */
+/* by Aleksejs Loginovs - November 2018 */
 #version 420
 
 layout(location = 0) in vec3 position;

@@ -55,12 +55,14 @@ private:
 	
 	Lightsource sun;
 
-	Drawable* monkey;
+	Drawable* statue;
 	Terrain* terrain;
 
 	glm::vec2 terrain_res;
 	glm::vec2 terrain_size;
-	float terr_frequency;
+	GLuint terr_frequency;
+	GLuint terr_scale;
+	GLuint terr_octaves;
 
 	TerrainGenerator terrain_gen;
 	ParticleSystem snow;
@@ -100,7 +102,7 @@ public:
 	static void error_callback(int error, const char* desc);
 	static void key_callback(GLFWwindow* window, int key_code, int scancode, int action, int mods);
 	static void cursor_moved_callback(GLFWwindow* window, double xpos, double ypos);
-
+	static void print_controls();
 	void init_objects();
 };
 

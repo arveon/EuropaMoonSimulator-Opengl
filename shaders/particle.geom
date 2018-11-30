@@ -1,3 +1,7 @@
+/*	by Aleksejs Loginovs - November 2018 
+	fragment geometry shader that turns points into quads with uvs
+*/
+
 #version 400 core
 layout(points) in;
 layout(triangle_strip, max_vertices=4) out;

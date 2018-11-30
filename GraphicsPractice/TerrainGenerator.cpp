@@ -1,3 +1,10 @@
+/*
+Responsible for generating a chunk of terrain and placing features on it.
+by Aleksejs Loginovs - Nov 2018
+basic terrain generation parts adapted from Iain Martin's basic terrain generation example
+*/
+
+
 #include "TerrainGenerator.h"
 
 
@@ -138,7 +145,7 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
-Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, float perlin_freq)
+Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, GLuint perlin_freq, GLuint scl, GLuint octaves)
 {
 	std::cerr << "Generating terrain:" << std::endl;
 	this->x_points = xpoints;
@@ -146,6 +153,8 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 	this->x_world = x_world;
 	this->z_world = z_world;
 	this->perlin_freq = perlin_freq;
+	this->octaves = octaves;
+	this->perlin_scale = scl;
 
 
 	GLuint num_verts = x_points * z_points;
@@ -196,9 +205,9 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 		}
 	}
 
-	scale_heights(0, 1, verts, num_verts);
+	scale_heights(0, 4, verts, num_verts);
 	scale_colours(0, 1, colours, num_verts);
-
+	
 #pragma region ridges
 	//generate a few ridges with random heights
 	std::vector<std::vector<glm::vec3>> ridges;
@@ -207,7 +216,7 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 	for (int i = 0; i < num_ridges; i++)
 	{
 		std::cerr << i << " of " << num_ridges << std::endl;
-		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, (rand() % 100 + 100) / 100, -(rand() % 100 + 200) / 100.f, 0.5));
+		ridges.push_back(FeatureGenerator::generate_ridge(ridge_resolution, (rand() % 100 + 200) / 100, -(rand() % 100 + 200) / 100.f, 0.5));
 	}
 	//apply random ridges
 	std::cerr << "Applying ridges" << std::endl;
@@ -298,6 +307,7 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 
 
 #pragma endregion
+
 	std::cerr << "Calculating terrain normals" << std::endl;
 	calculate_normals(normals, elements, verts);
 	
@@ -379,7 +389,7 @@ TerrainGenerator::TerrainGenerator()
 	z_world = 50.f;
 
 	octaves = 8;
-	perlin_scale = 7.f;
+	perlin_scale = 14.f;
 	perlin_freq = 4.f;
 }
 
