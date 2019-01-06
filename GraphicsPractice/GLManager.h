@@ -57,6 +57,7 @@ private:
 
 	Drawable* statue;
 	Terrain* terrain;
+	Sphere* sphere;
 
 	glm::vec2 terrain_res;
 	glm::vec2 terrain_size;

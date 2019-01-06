@@ -153,6 +153,11 @@ void GLManager::init_objects()
 	statue->set_normal_shader(normals_shader);
 	statue->set_triangle_winding(GL_CCW);
 
+
+	sphere = new Sphere(lightsource_shader);
+	sphere->makeSphere(20, 5);
+
+
 	basic_shader.set_shininess(8.f);
 
 	sun = Lightsource(lightsource_shader);
@@ -203,6 +208,10 @@ void GLManager::update(float delta_time)
 	snow.set_view_matrix(camera.get_view_matrix());
 	statue->set_draw_normals(draw_normals);
 	terrain->set_draw_normals(draw_normals);
+	
+	sphere->set_view_matrix(camera.get_view_matrix());
+	sphere->set_draw_normals(false);
+	sphere->translate(glm::vec3(0, 10.f, 0));
 
 
 	//manipulate and draw other objects
@@ -213,7 +222,6 @@ void GLManager::update(float delta_time)
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
 	statue->translate(glm::vec3(0, -0.3, 0));
 	statue->scale(glm::vec3(0.002, 0.002, 0.002));
-	
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
@@ -242,6 +250,7 @@ void GLManager::render()
 	statue->draw();
 	sun.draw();
 	snow.draw_particles();
+	sphere->drawSphere(1);
 }
 
 void GLManager::terminate()
