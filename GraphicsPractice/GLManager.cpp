@@ -143,19 +143,14 @@ void GLManager::init_objects()
 	snow.set_texture(snowflake);
 	snow.create_particles(terrain_size.x+20, terrain_size.y+20,3,8,30);
 
-	terrain_gen.set_texture(terrain_tex);
+	/*terrain_gen.set_texture(terrain_tex);
 	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency,terr_scale, terr_octaves);
 	terrain->set_shader(basic_shader);
-	terrain->set_normal_shader(normals_shader);
-	
-	statue = ObjectLoader::load_object("../models/venusl.obj");
-	statue->set_shader(basic_shader);
-	statue->set_normal_shader(normals_shader);
-	statue->set_triangle_winding(GL_CCW);
+	terrain->set_normal_shader(normals_shader);*/
 
 
 	sphere = new Sphere(lightsource_shader);
-	sphere->makeSphere(20, 5);
+	sphere->makeSphere(100, 100);
 
 
 	basic_shader.set_shininess(8.f);
@@ -201,27 +196,24 @@ void GLManager::update(float delta_time)
 	normals_shader.set_projection_matrix(projection);
 
 	//set view matrix in objects that need it
-	statue->set_view_matrix(camera.get_view_matrix());
-	terrain->set_view_matrix(camera.get_view_matrix());
+	//terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
 	sun.set_view_matrix(camera.get_view_matrix());
 	snow.set_view_matrix(camera.get_view_matrix());
-	statue->set_draw_normals(draw_normals);
-	terrain->set_draw_normals(draw_normals);
+	//terrain->set_draw_normals(draw_normals);
 	
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(false);
 	sphere->translate(glm::vec3(0, 10.f, 0));
+	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 
 
 	//manipulate and draw other objects
 	glm::vec3 campos = -camera.get_position();
 	campos.y += 2;
 	sun.move_to(glm::vec4(campos,1));
-	terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
+	//terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
-	statue->translate(glm::vec3(0, -0.3, 0));
-	statue->scale(glm::vec3(0.002, 0.002, 0.002));
 
 	//set the light position in lit shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
@@ -246,11 +238,8 @@ void GLManager::update(float delta_time)
 void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	terrain->draw();
-	statue->draw();
 	sun.draw();
-	snow.draw_particles();
-	sphere->drawSphere(1);
+	sphere->drawSphere(0);
 }
 
 void GLManager::terminate()
