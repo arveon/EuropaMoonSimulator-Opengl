@@ -167,9 +167,9 @@ void Sphere::makeUnitSphere(GLfloat* verts, GLfloat* texcoords)
 			verts[cur_vert * 3 + 2] = glm::sin(lon_r) * glm::cos(lat_r);
 
 
-			/* Define the texture coordinates as normalised lat/long values */
-			float u = lon / 360.f;
-			float v = lat / 180.f;
+			//Define the texture coordinates as normalised lat/long values
+			float u = (lon + 180.f) / 360.f;
+			float v = (lat + 90.f) / 180.f;
 
 			texcoords[cur_vert * 2] = u;
 			texcoords[cur_vert * 2 + 1] = v;
