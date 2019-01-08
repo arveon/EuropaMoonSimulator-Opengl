@@ -33,6 +33,16 @@ Sphere::Sphere(Shader shader, GLuint textureID)
 		tex_enabled = false;
 }
 
+Sphere::Sphere()
+{
+	attribute_v_coord = 0;
+	attribute_v_colours = 1;
+	attribute_v_normal = 2;
+	attribute_v_tex_coord = 3;
+	numspherevertices = 0;		// We set this when we know the numlats and numlongs values in makeSphere
+	this->drawmode = 0;
+}
+
 Sphere::~Sphere()
 {
 }
@@ -52,8 +62,8 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 	this->numlongs = numlongs;
 
 	// Create the temporary arrays to create the sphere vertex attributes
-	GLfloat* pVertices = new GLfloat[numvertices * 3];
-	GLfloat* pTexCoords = new GLfloat[numvertices * 2];
+	pVertices = new GLfloat[numvertices * 3];
+	pTexCoords = new GLfloat[numvertices * 2];
 	GLfloat* pColours = new GLfloat[numvertices * 4];
 	makeUnitSphere(pVertices, pTexCoords);
 
@@ -96,7 +106,7 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 
 	/* Calculate the number of indices in our index array and allocate memory for it */
 	GLuint numindices = ((numlongs * 2)) * (numlats - 2) + ((numlongs + 1) * 2);
-	GLuint* pindices = new GLuint[numindices];
+	pindices = new GLuint[numindices];
 
 	// fill "indices" to define triangle strips
 	GLuint index = 0;		// Current index
@@ -130,10 +140,7 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numindices * sizeof(GLuint), pindices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	delete pTexCoords;
-	delete pindices;
 	delete pColours;
-	delete pVertices;
 }
 
 
@@ -187,12 +194,26 @@ void Sphere::makeUnitSphere(GLfloat* verts, GLfloat* texcoords)
 
 }
 
+void Sphere::reload_in_memory()
+{
+	/* Generate the vertex buffer object */
+	glGenBuffers(1, &sphereBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/* Store the normals in a buffer object */
+	glGenBuffers(1, &sphereNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 /* Draws the sphere form the previously defined vertex and index buffers */
 void Sphere::drawSphere(int drawmode)
 {
 	shader.set_model_view_matrix(view_matrix*model_matrix);
 
-	GLuint i;
 	glUseProgram(shader.get_program_id());
 	/* Draw the vertices as GL_POINTS */
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
@@ -248,7 +269,7 @@ void Sphere::drawSphere(int drawmode)
 		GLuint lat_offset_current = lat_offset_start * 4;
 
 		/* Draw the triangle strips of latitudes */
-		for (i = 0; i < numlats - 2; i++)
+		for (GLuint i = 0; i < numlats - 2; i++)
 		{
 			glDrawElements(GL_TRIANGLE_STRIP, numlongs * 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
 			lat_offset_current += (lat_offset_jump * 4);

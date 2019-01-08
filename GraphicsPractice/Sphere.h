@@ -17,11 +17,11 @@ modified by Aleksejs Loginovs - November 2018
 class Sphere : public Drawable
 {
 private:
+	friend class TerrainGenerator;
 	Shader shader = NULL;
 public:
-
 	Sphere(Shader shader, GLuint textureID = NULL);
-	Sphere() {}
+	Sphere();
 	~Sphere();
 
 	void makeSphere(GLuint numlats, GLuint numlongs);
@@ -33,6 +33,11 @@ public:
 	GLuint sphereColours;
 	GLuint elementbuffer;
 
+	GLfloat* pVertices;
+	GLfloat* pTexCoords;
+	GLuint* pindices;
+	GLfloat* pNormals;
+
 	GLuint attribute_v_coord;
 	GLuint attribute_v_normal;
 	GLuint attribute_v_colours;
@@ -42,9 +47,11 @@ public:
 	unsigned int numlats;
 	unsigned int numlongs;
 	int drawmode;
-
+	void set_shader(Shader shader) { this->shader = shader; Drawable::shader_program = shader; }
+	void set_texture(GLuint texture) { Drawable::texture_id = texture; }
 private:
 	void makeUnitSphere(GLfloat *pVertices, GLfloat* pTexCoords);
+	void reload_in_memory();
 };
 
 

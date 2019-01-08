@@ -131,7 +131,6 @@ void GLManager::init()
 	terr_scale = 8;
 	terr_octaves = 8;
 
-
 	init_objects();
 }
 
@@ -148,10 +147,9 @@ void GLManager::init_objects()
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);*/
 
-
-	sphere = new Sphere(basic_shader, terrain_tex);
-	sphere->makeSphere(100, 100);
-
+	
+	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 100,100, terrain_tex);
+	sphere->set_normal_shader(normals_shader);
 
 	basic_shader.set_shininess(8.f);
 

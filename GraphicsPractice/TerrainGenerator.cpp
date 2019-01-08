@@ -145,6 +145,30 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
+Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, int numlats, GLuint tex)
+{
+	Sphere* sphere = new Sphere(shader, tex);
+	sphere->makeSphere(numlats, numlongs);
+	
+	//test single ridge
+	int ridgelong = 2;
+	for (int i = 0; i < numlats; i++)
+	{
+		int cur_id = i * numlats + 1 + ridgelong;
+		glm::vec3 to_center(sphere->pVertices[cur_id * 3], sphere->pVertices[cur_id * 3+1], sphere->pVertices[cur_id * 3+2]);
+
+		float cur_length = glm::length(to_center);
+		float target_length = cur_length * 1.1f;
+
+		sphere->pVertices[cur_id * 3] = target_length * to_center.x / cur_length;
+		sphere->pVertices[cur_id * 3 + 1] = target_length * to_center.y / cur_length;
+		sphere->pVertices[cur_id * 3 + 2] = target_length * to_center.z / cur_length;
+	}
+
+	sphere->reload_in_memory();
+	return sphere;
+}
+
 Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, GLuint perlin_freq, GLuint scl, GLuint octaves)
 {
 	std::cerr << "Generating terrain:" << std::endl;
