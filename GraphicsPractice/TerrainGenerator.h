@@ -21,6 +21,9 @@ private:
 	GLuint x_points;
 	GLuint z_points;
 
+	GLuint num_longs;
+	GLuint num_lats;
+
 	GLfloat x_world;
 	GLfloat z_world;
 

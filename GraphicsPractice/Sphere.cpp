@@ -79,13 +79,13 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 	/* Generate the vertex buffer object */
 	glGenBuffers(1, &sphereBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 3, pVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 3, pVertices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Store the normals in a buffer object */
 	glGenBuffers(1, &sphereNormals);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 3, pVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 3, pVertices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Store the colours in a buffer object */
@@ -199,13 +199,13 @@ void Sphere::reload_in_memory()
 	/* Generate the vertex buffer object */
 	glGenBuffers(1, &sphereBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Store the normals in a buffer object */
 	glGenBuffers(1, &sphereNormals);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numspherevertices * 3, pVertices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

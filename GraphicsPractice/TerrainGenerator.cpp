@@ -149,20 +149,45 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 {
 	Sphere* sphere = new Sphere(shader, tex);
 	sphere->makeSphere(numlats, numlongs);
-	
-	//test single ridge
-	int ridgelong = 2;
-	for (int i = 0; i < numlats; i++)
-	{
-		int cur_id = i * numlats + 1 + ridgelong;
-		glm::vec3 to_center(sphere->pVertices[cur_id * 3], sphere->pVertices[cur_id * 3+1], sphere->pVertices[cur_id * 3+2]);
 
+	this->num_longs = numlongs;
+	this->num_lats = numlats;
+	
+	////test single ridge
+	//int ridgelong = 2;
+	//for (int i = 0; i < numlats; i++)
+	//{
+	//	int cur_id = i * numlats + 1 + ridgelong;
+	//	glm::vec3 to_center(sphere->pVertices[cur_id * 3], sphere->pVertices[cur_id * 3+1], sphere->pVertices[cur_id * 3+2]);
+
+	//	float cur_length = glm::length(to_center);
+	//	float target_length = cur_length * 1.1f;
+
+	//	sphere->pVertices[cur_id * 3] = target_length * to_center.x / cur_length;
+	//	sphere->pVertices[cur_id * 3 + 1] = target_length * to_center.y / cur_length;
+	//	sphere->pVertices[cur_id * 3 + 2] = target_length * to_center.z / cur_length;
+	//}
+
+	float ridge_long_deg = 180;
+	GLfloat latstep = 180.f / (float)numlats;
+	GLfloat longstep = 360.f / (numlongs - 1);
+	int numpoints = numlats * numlongs;
+
+	int long_id = std::floor(ridge_long_deg / longstep);
+	int cur_lat = 0;
+	for (float lat = -90.f + latstep; lat < 90.f; lat += latstep)
+	{
+		int point_id = cur_lat * numlongs + long_id;
+		glm::vec3 to_center(sphere->pVertices[point_id * 3], sphere->pVertices[point_id * 3 + 1], sphere->pVertices[point_id * 3 + 2]);
+		
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * 1.1f;
 
-		sphere->pVertices[cur_id * 3] = target_length * to_center.x / cur_length;
-		sphere->pVertices[cur_id * 3 + 1] = target_length * to_center.y / cur_length;
-		sphere->pVertices[cur_id * 3 + 2] = target_length * to_center.z / cur_length;
+		sphere->pVertices[point_id * 3] = target_length * to_center.x / cur_length;
+		sphere->pVertices[point_id * 3 + 1] = target_length * to_center.y / cur_length;
+		sphere->pVertices[point_id * 3 + 2] = target_length * to_center.z / cur_length;
+		std::cerr << point_id * 3 << " of " << numpoints << " lat: " << cur_lat << " long: " << long_id << std::endl;
+		cur_lat++;
 	}
 
 	sphere->reload_in_memory();
