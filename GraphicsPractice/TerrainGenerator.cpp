@@ -153,14 +153,38 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 	this->num_longs = numlongs;
 	this->num_lats = numlats;
 
-	glm::vec2 resolution(sphere->numlongs, sphere->numlats);
-	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.1f, 0.9f, 0.3f);
+	glm::vec2 resolution(sphere->numlongs-1, sphere->numlats);
+	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.1f, .9f, 0.3f);
 	
-	int lon = 20;
+	int lon = 70;
+	int maxid = 0;
+	glm::vec2 scale(0.3f,1.f);
+	//needs ridges, resolution, scale
+
+	std::vector<int> visited;
 	for (glm::vec3 vert : ridge)
 	{
 		vert.z = lon + vert.z;
-		int id = vert.x * resolution.y + vert.z;
+		vert.z = vert.z < 0 ? 100 + vert.z : vert.z;
+		vert.x *= scale.y;
+		vert.z *= scale.x;
+
+		//feature resolution to sphere resolution
+		vert.z = (sphere->numlongs-1) / resolution.x * vert.z;
+		vert.x = sphere->numlats / resolution.y * vert.x;
+
+		int id = vert.x * (resolution.y) + vert.z;
+		
+		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
+		bool vis = false;
+		for (int i : visited)
+			if (i == id)
+			{
+				vis = true;
+				break;
+			}
+		if (vis)
+			continue;
 
 		glm::vec3 to_center(sphere->pVertices[id * 3], sphere->pVertices[id * 3 + 1], sphere->pVertices[id * 3 + 2]);
 		float cur_length = glm::length(to_center);
@@ -168,7 +192,12 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 		sphere->pVertices[id * 3] = target_length * to_center.x / cur_length;
 		sphere->pVertices[id * 3 + 1] = target_length * to_center.y / cur_length;
 		sphere->pVertices[id * 3 + 2] = target_length * to_center.z / cur_length;
+
+		visited.push_back(id);
+
+		maxid = id > maxid ? id : maxid;
 	}
+
 
 
 	//float ridge_long_deg = 180;

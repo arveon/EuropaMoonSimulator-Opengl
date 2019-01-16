@@ -130,11 +130,14 @@ std::vector<glm::vec3>  FeatureGenerator::generate_crater(glm::vec2 resolution, 
 	return fin_verts;
 }
 
+//ridge width represents what percentage of formation width the ridge takes
 std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width)
 {
-	float mid_width = 0.2f*ridge_width;//2 times smaller than ridge
-	ridge_width = 0.4f*ridge_width;//max width can be only 0.4 of whole as it's double ridge
-	mid_low = 0.2f*mid_low;
+	//float mid_width = 0.2f*ridge_width;//2 times smaller than ridge
+	//ridge_width = 0.4f*ridge_width;//max width can be only 0.4 of whole as it's double ridge
+	//mid_low = 0.2f*mid_low;
+
+	float mid_width = 1.f - ridge_width * 2;
 
 	float ridge_peak_close = 0.5f;
 
@@ -154,6 +157,8 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 	float high_dif = peak_height - 1.f;
 	float low_dif = mid_low - 1.f;
 
+	float mid_var_range = 1.0f - mid_low;
+
 	int numpoints = 0;
 	for (int i = 0; i < resolution.y; i++)
 	{
@@ -162,7 +167,7 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 			float cur_y = i * steps.y;
 			int cur_index = i * (int)resolution.x + j;
 			verts[cur_index] = glm::vec3(j, 1.f, i-resolution.x/2);
-			if (cur_y > top_start && cur_y < top_end)
+			if (cur_y >= top_start && cur_y <= top_end)
 			{//the first peak
 				float range_size = (top_end - top_start);
 				if ((cur_y - top_start) > range_size*ridge_peak_close)
@@ -182,17 +187,17 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 				float range_size = (bottom_start - top_end);
 				if ((cur_y - top_end) > range_size*0.5)
 				{//height falling
-					verts[cur_index].y = (range_size - (cur_y - top_end)) / range_size * mid_low * 2;
+					verts[cur_index].y = 1.f - ((top_end + range_size - cur_y) / range_size) * mid_var_range * 2;
 				}
 				else
 				{//height increasing
-					verts[cur_index].y = (cur_y - top_end) / range_size * mid_low * 2;
+					verts[cur_index].y = 1.f - ((cur_y - top_end) / range_size) * mid_var_range * 2;
 				}
-				verts[cur_index].y *= low_dif;
-				verts[cur_index].y += 1.f;
+				/*verts[cur_index].y *= low_dif;
+				verts[cur_index].y += 1.f;*/
 				numpoints++;
 			}
-			else if (cur_y > bottom_start && cur_y < bottom_end)
+			else if (cur_y >= bottom_start && cur_y <= bottom_end)
 			{//the second peak
 				float range_size = (bottom_end - bottom_start);
 				if ((cur_y - bottom_start) > range_size*ridge_peak_close)
@@ -210,6 +215,7 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 			else//if vert unused, mark it with -999 so will be skipped in next step
 				verts[cur_index] = glm::vec3(-999, -999, -999);
 		}
+		std::cout << verts[(int)(i * resolution.y) - 1].y << std::endl;
 	}
 
 	//add all generated points to return vector (excluding the marked ones that are unused)
