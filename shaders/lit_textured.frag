@@ -24,7 +24,7 @@ vec4 specular_colour = vec4(0.5, 0.5, 0.5, 1);
 const float fog_density = 0.04;
 const vec4 fog_colour = vec4(0.4,0.4,0.6,1);
 
-float lightsource_strength = 0.5;
+float lightsource_strength = 0.4;
 
 
 void main()

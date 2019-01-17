@@ -156,24 +156,36 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 	glm::vec2 resolution(sphere->numlongs-1, sphere->numlats);
 	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.1f, .9f, 0.3f);
 	
-	int lon = 70;
 	int maxid = 0;
-	glm::vec2 scale(0.3f,1.f);
+	glm::vec2 scale(0.1f,0.9f);
+	glm::vec2 scaled_res = resolution * scale;
+	glm::vec2 shift(70,-50);
 	//needs ridges, resolution, scale
 
 	std::vector<int> visited;
-	for (glm::vec3 vert : ridge)
+	for (glm::vec3 v : ridge)
 	{
-		vert.z = lon + vert.z;
-		vert.z = vert.z < 0 ? 100 + vert.z : vert.z;
+		glm::vec3 vert = v;
+
 		vert.x *= scale.y;
 		vert.z *= scale.x;
 
-		//feature resolution to sphere resolution
-		vert.z = (sphere->numlongs-1) / resolution.x * vert.z;
-		vert.x = sphere->numlats / resolution.y * vert.x;
+		vert.z = shift.x + vert.z;
+		vert.x = shift.y + vert.x;
+		//cap them
+		vert.x = vert.x < 0 ? 0 : vert.x;
+		vert.x = vert.x > resolution.y ? 0 : vert.x;
+		vert.z = vert.z < 0 ? resolution.x + vert.z : vert.z;//wrap around
+		vert.z = vert.z > resolution.y ? resolution.y : vert.z;
 
-		int id = vert.x * (resolution.y) + vert.z;
+		//feature resolution to sphere resolution
+		glm::vec2 t_vert;
+		t_vert.y = (sphere->numlongs-1) / resolution.x * vert.z;
+		t_vert.x = sphere->numlats / resolution.y * vert.x;
+
+		int id = t_vert.x * resolution.y + t_vert.y;
+		if (id < 0)
+			std::cout << id << std::endl;
 		
 		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
 		bool vis = false;
@@ -197,29 +209,6 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 
 		maxid = id > maxid ? id : maxid;
 	}
-
-
-
-	//float ridge_long_deg = 180;
-	//GLfloat latstep = 180.f / (float)numlats;
-	//GLfloat longstep = 360.f / (numlongs - 1);
-	//int numpoints = numlats * numlongs;
-
-	//int long_id = std::floor(ridge_long_deg / longstep);
-	//int cur_lat = 0;
-	//for (float lat = -90.f + latstep; lat < 90.f; lat += latstep)
-	//{
-	//	int point_id = cur_lat * numlongs + long_id;
-	//	glm::vec3 to_center(sphere->pVertices[point_id * 3], sphere->pVertices[point_id * 3 + 1], sphere->pVertices[point_id * 3 + 2]);
-	//	
-	//	float cur_length = glm::length(to_center);
-	//	float target_length = cur_length * 1.1f;
-
-	//	sphere->pVertices[point_id * 3] = target_length * to_center.x / cur_length;
-	//	sphere->pVertices[point_id * 3 + 1] = target_length * to_center.y / cur_length;
-	//	sphere->pVertices[point_id * 3 + 2] = target_length * to_center.z / cur_length;
-	//	cur_lat++;
-	//}
 
 	sphere->reload_in_memory();
 	return sphere;
