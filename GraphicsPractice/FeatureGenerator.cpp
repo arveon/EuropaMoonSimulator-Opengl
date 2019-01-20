@@ -166,7 +166,7 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 		{
 			float cur_y = i * steps.y;
 			int cur_index = i * (int)resolution.x + j;
-			verts[cur_index] = glm::vec3(j, 1.f, i-resolution.x/2);
+			verts[cur_index] = glm::vec3(i, 1.f, j);//need to flip x and z for sphere to render it properly
 			if (cur_y >= top_start && cur_y <= top_end)
 			{//the first peak
 				float range_size = (top_end - top_start);

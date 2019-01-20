@@ -157,9 +157,9 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.1f, .9f, 0.3f);
 	
 	int maxid = 0;
-	glm::vec2 scale(0.1f,0.9f);
+	glm::vec2 scale(0.1f,0.2f);//scaling horizontally works
 	glm::vec2 scaled_res = resolution * scale;
-	glm::vec2 shift(70,-50);
+	glm::vec2 shift(-20,90);//shifting works
 	//needs ridges, resolution, scale
 
 	std::vector<int> visited;
@@ -167,37 +167,44 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 	{
 		glm::vec3 vert = v;
 
-		vert.x *= scale.y;
-		vert.z *= scale.x;
-
-		vert.z = shift.x + vert.z;
-		vert.x = shift.y + vert.x;
-		//cap them
-		vert.x = vert.x < 0 ? 0 : vert.x;
-		vert.x = vert.x > resolution.y ? 0 : vert.x;
-		vert.z = vert.z < 0 ? resolution.x + vert.z : vert.z;//wrap around
-		vert.z = vert.z > resolution.y ? resolution.y : vert.z;
-
 		//feature resolution to sphere resolution
 		glm::vec2 t_vert;
-		t_vert.y = (sphere->numlongs-1) / resolution.x * vert.z;
-		t_vert.x = sphere->numlats / resolution.y * vert.x;
+		t_vert.x = (sphere->numlongs-1)/ resolution.x * vert.x;
+		t_vert.y = (sphere->numlats) / resolution.y * vert.z;
 
-		int id = t_vert.x * resolution.y + t_vert.y;
-		if (id < 0)
-			std::cout << id << std::endl;
+		t_vert.x *= scale.x;
+		t_vert.y *= scale.y;
+
+		t_vert.y = shift.y + t_vert.y;
+		t_vert.x = shift.x + t_vert.x;
+
+		//horizontal (more maths to allow to wrap around
+		t_vert.x = t_vert.x < 0 ? ((int)resolution.x - (int)t_vert.x)%(int)resolution.x : t_vert.x;
+		t_vert.x = t_vert.x > resolution.x ? (int)t_vert.x % (int)resolution.y : t_vert.x;
+		//vertical (shouldn't wrap around
+		t_vert.y = t_vert.y < 0 ? /*((int)resolution.y - (int)t_vert.y)%(int)resolution.y*/resolution.y : t_vert.y;
+		t_vert.y = t_vert.y > resolution.y ? /*(int)t_vert.y % (int)resolution.x*/ resolution.y : t_vert.y;
+
+		//CALCULATIONS SHOULD BE CORRECT UP TO HERE BECAUSE t_vert == vert at this point
+		int id = std::round(std::floor(t_vert.y) * resolution.y + t_vert.x);
+		//std::cout << id << std::endl;
 		
 		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
 		bool vis = false;
 		for (int i : visited)
+		{
 			if (i == id)
 			{
 				vis = true;
 				break;
 			}
+		}
 		if (vis)
 			continue;
 
+
+	/*	if (vert.y == 2.f)
+			std::cout << "2" << std::endl;*/
 		glm::vec3 to_center(sphere->pVertices[id * 3], sphere->pVertices[id * 3 + 1], sphere->pVertices[id * 3 + 2]);
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * vert.y;
@@ -209,7 +216,7 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 
 		maxid = id > maxid ? id : maxid;
 	}
-
+	std::cout << maxid;
 	sphere->reload_in_memory();
 	return sphere;
 }
