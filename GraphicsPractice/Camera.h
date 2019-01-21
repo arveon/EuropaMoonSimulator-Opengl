@@ -19,7 +19,7 @@ private:
 
 	glm::mat4 view_matrix;
 public:
-	void update(float dt, glm::vec2 cursor_deltas);
+	void update(float dt, glm::vec3 cursor_deltas);
 
 	void set_movement_dir(glm::vec3 movement_dir) { this->movement = movement_dir; }
 	void set_x_mov(int x) { direction.x = x; }

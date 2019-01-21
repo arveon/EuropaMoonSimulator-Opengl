@@ -68,11 +68,12 @@ private:
 	TerrainGenerator terrain_gen;
 	ParticleSystem snow;
 
-	static glm::vec2 cursor_movement;
+	static glm::vec3 cursor_movement;
 	static Camera camera;
 	static GLfloat aspect_ratio;
 	static glm::vec3 light_movement;
 	static float unaffected_time;
+	static float camera_z;
 
 	static int speed;
 
@@ -104,6 +105,7 @@ public:
 	static void key_callback(GLFWwindow* window, int key_code, int scancode, int action, int mods);
 	static void cursor_moved_callback(GLFWwindow* window, double xpos, double ypos);
 	static void print_controls();
+	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void init_objects();
 };
 

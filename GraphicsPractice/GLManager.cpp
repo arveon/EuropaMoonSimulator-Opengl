@@ -20,7 +20,7 @@ bool GLManager::light_enabled = true;
 bool GLManager::colour_enabled = false;
 bool GLManager::draw_normals = false;
 
-glm::vec2 GLManager::cursor_movement;
+glm::vec3 GLManager::cursor_movement;
 
 ///Function used to reset the scene (camera,  sun, time speed)
 void GLManager::reset_scene()
@@ -53,7 +53,7 @@ void GLManager::init()
 	win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simplest", NULL, NULL);
 	aspect_ratio = WINDOW_WIDTH / WINDOW_HEIGHT;
 	glfwMakeContextCurrent(win);
-	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	
 
 	GLenum err = glewInit();
@@ -67,6 +67,7 @@ void GLManager::init()
 	events.set_reshape_callback(win, resize_callback);
 	events.set_key_callback(win, key_callback);
 	events.set_cursor_callback(win, cursor_moved_callback);
+	glfwSetScrollCallback(win, scroll_callback);
 
 	//load required shaders
 	try
@@ -146,7 +147,6 @@ void GLManager::init_objects()
 	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency,terr_scale, terr_octaves);
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);*/
-
 	
 	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 100,100, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
@@ -183,7 +183,8 @@ void GLManager::loop()
 void GLManager::update(float delta_time)
 {
 	camera.update(unaffected_time, cursor_movement);
-	cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
+	//cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
+	cursor_movement.z = 0;
 
 	//set projection matrix in all shaders
 	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 200.f);
@@ -202,12 +203,15 @@ void GLManager::update(float delta_time)
 	
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(false);
-	sphere->translate(glm::vec3(0, 10.f, 0));
+	//sphere->translate(glm::vec3(0, 10.f, 0));
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
+	sphere->rotate(glm::radians(cursor_movement.x),glm::vec3(0,1,0));
+	sphere->rotate(glm::radians(-cursor_movement.y), glm::vec3(1, 0, 0));
+
 
 
 	//manipulate and draw other objects
-	glm::vec3 campos = -camera.get_position();
+	glm::vec3 campos = camera.get_position();
 	campos.y += 2;
 	sun.move_to(glm::vec4(campos,1));
 	//terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
@@ -219,11 +223,6 @@ void GLManager::update(float delta_time)
 	//apply scene changes if specific flags were set
 	if (reset)
 		reset_scene();
-	if (!show_cursor)
-		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	else
-		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
 
 	basic_shader.set_attenuation_enabled(attenuation_enabled);
 	basic_shader.set_texture_enabled(texture_enabled);
@@ -298,10 +297,6 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		if (key_code == GLFW_KEY_ESCAPE)
 			close = true;
 
-		//toggle cursor
-		if (key_code == GLFW_KEY_TAB)
-			show_cursor = !show_cursor;
-
 		//toggle colour
 		if (key_code == GLFW_KEY_C)
 		{
@@ -329,14 +324,7 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 
 		//toggle texture
 		if (key_code == GLFW_KEY_T)
-			texture_enabled = !texture_enabled;
-
-		//time speed changes
-		if (key_code == GLFW_KEY_PERIOD)
-			speed += 30;
-		if (key_code == GLFW_KEY_COMMA)
-			speed -= 30;
-		
+			texture_enabled = !texture_enabled;		
 	}
 	else if(action == GLFW_RELEASE)
 	{
@@ -361,12 +349,18 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 	}
 }
 
+void GLManager::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	cursor_movement.z += yoffset/2;
+}
+
 void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double ypos)
 {
 	static int prev_xpos = NULL;
 	static int prev_ypos = NULL;
 
-	if (!show_cursor)//only keep track of cursor movement if its captured by window
+	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	if (state == GLFW_PRESS)
 	{
 		if (prev_xpos == NULL)
 		{//safeguard against a jump at the first call, when these values aren't set yet (=> equal to 0)
@@ -374,27 +368,31 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 			prev_ypos = ypos;
 		}
 
-		cursor_movement.x = (floor(xpos) - prev_xpos)*2;
-		cursor_movement.y = (floor(ypos) - prev_ypos)*2;
-	}
+		glm::vec2 temp_delta;
+		temp_delta.x = (floor(xpos) - prev_xpos);
+		temp_delta.y = (floor(ypos) - prev_ypos);
 
+		cursor_movement.x += temp_delta.x/4;
+		cursor_movement.y += temp_delta.y/4;
+
+
+		if (cursor_movement.x >= 360)
+			cursor_movement.x = (int)cursor_movement.x % 360;
+		else if (cursor_movement.x < 0)
+			cursor_movement.x = 360 - (int)cursor_movement.x%360;
+
+		if (cursor_movement.y >= 360)
+			cursor_movement.y = (int)cursor_movement.y % 360;
+		else if (cursor_movement.y < 0)
+			cursor_movement.y = 360 - (int)cursor_movement.y % 360;
+	}
 	prev_xpos = floor(xpos);
 	prev_ypos = floor(ypos);
+	
 }
 
 void GLManager::print_controls()
 {
-	std::cout << "Hello and welcome to the snowy scene. This is a small procedurally generated piece of land." << std::endl;
-	std::cout << "The controls are:" << std::endl;
-	std::cout << "WASD to move" << std::endl;
-	std::cout << "CTRL to move down on Y axis" << std::endl;
-	std::cout << "Space to move up on Y axis" << std::endl;
-	std::cout << "Move mouse to look around" << std::endl;
-	std::cout << "R - to teleport to the start position if you ever get lost" << std::endl;
-	std::cout << "X - to toggle attenuation" << std::endl;
-	std::cout << "T - to toggle texture" << std::endl;
-	std::cout << "TAB - to capture/uncapture mouse" << std::endl;
-	std::cout << "Esc - to exit the simulation" << std::endl;
 }
 
 
