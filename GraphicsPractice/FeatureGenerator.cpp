@@ -215,7 +215,7 @@ std::vector<glm::vec3> FeatureGenerator::generate_ridge_sphere(glm::vec2 resolut
 			else//if vert unused, mark it with -999 so will be skipped in next step
 				verts[cur_index] = glm::vec3(-999, -999, -999);
 		}
-		std::cout << verts[(int)(i * resolution.y) - 1].y << std::endl;
+		//std::cout << verts[(int)(i * resolution.y) - 1].y << std::endl;
 	}
 
 	//add all generated points to return vector (excluding the marked ones that are unused)

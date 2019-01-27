@@ -94,6 +94,7 @@ void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int n
 
 void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts)
 {
+	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 	GLuint element_pos = 0;
 	glm::vec3 AB, AC, cross_product;
 
@@ -106,7 +107,7 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 			// Extract the vertex indices from the element array 
 			GLuint v1 = elements->at(element_pos);
 			GLuint v2 = elements->at(element_pos+1);
-			GLuint v3 = elements->at(element_pos + 2);
+			GLuint v3 = elements->at(element_pos+2);
 
 			// Define the two vectors for the triangle
 			AB = verts[v2] - verts[v1];
@@ -137,12 +138,10 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	for (GLuint v = 0; v < x_points*z_points; v++)
 	{
 		normals[v] = glm::normalize(normals[v]);
-		//normals[v].x = -normals[v].x;
-		//std::cerr << v << ": " << normals[v].x << " " << normals[v].y << " " << normals[v].z << std::endl;
 	}
 
 	
-	std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
+	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
 Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, int numlats, GLuint tex)
@@ -153,24 +152,40 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 	this->num_longs = numlongs;
 	this->num_lats = numlats;
 
-	glm::vec2 resolution(sphere->numlongs-1, sphere->numlats);
-	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.1f, .9f, 0.3f);
+	glm::vec2 resolution(500, 100);
+	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .9f, 0.45f);
+	resolution = glm::vec2(100, 100);
+	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
 	
 	int maxid = 0;
-	glm::vec2 scale(0.1f,0.2f);//scaling horizontally works
+	glm::vec2 scale(1.f,1.f);//scaling horizontally works
+	scale.x = .2f;
+	scale.y = .6f;
 	glm::vec2 scaled_res = resolution * scale;
-	glm::vec2 shift(-20,90);//shifting works
+	glm::vec2 shift(0,100);//x-sideways y-updown
 	//needs ridges, resolution, scale
+	apply_terrain_feature_sphere(ridge, scale, shift, sphere);
+	scale.x = .3f;
+	scale.y = .5f;
+	shift = glm::vec2(0, 300);
+	apply_terrain_feature_sphere(crater, scale, shift, sphere);
+	
+	calculate_normals(sphere->normals, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts);
+	sphere->reload_in_memory();
+	return sphere;
+}
 
+void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere)
+{
 	std::vector<int> visited;
-	for (glm::vec3 v : ridge)
+	for (glm::vec3 v : feature)
 	{
 		glm::vec3 vert = v;
 
 		//feature resolution to sphere resolution
 		glm::vec2 t_vert;
-		t_vert.x = (sphere->numlongs-1)/ resolution.x * vert.x;
-		t_vert.y = (sphere->numlats) / resolution.y * vert.z;
+		t_vert.x = /*(sphere->numlongs-1)/ resolution.x **/ vert.x;
+		t_vert.y = /*(sphere->numlats) / resolution.y **/ vert.z;
 
 		t_vert.x *= scale.x;
 		t_vert.y *= scale.y;
@@ -179,16 +194,15 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 		t_vert.x = shift.x + t_vert.x;
 
 		//horizontal (more maths to allow to wrap around
-		t_vert.x = t_vert.x < 0 ? ((int)resolution.x - (int)t_vert.x)%(int)resolution.x : t_vert.x;
-		t_vert.x = t_vert.x > resolution.x ? (int)t_vert.x % (int)resolution.y : t_vert.x;
+		t_vert.x = t_vert.x < 0 ? ((int)sphere->numlongs - (int)t_vert.x) % (int)sphere->numlongs : t_vert.x;
+		t_vert.x = t_vert.x > sphere->numlongs ? (int)t_vert.x % (int)sphere->numlongs : t_vert.x;
 		//vertical (shouldn't wrap around
-		t_vert.y = t_vert.y < 0 ? /*((int)resolution.y - (int)t_vert.y)%(int)resolution.y*/resolution.y : t_vert.y;
-		t_vert.y = t_vert.y > resolution.y ? /*(int)t_vert.y % (int)resolution.x*/ resolution.y : t_vert.y;
+		t_vert.y = t_vert.y < 0 ? /*((int)resolution.y - (int)t_vert.y)%(int)resolution.y*/sphere->numlats : t_vert.y;
+		t_vert.y = t_vert.y > sphere->numlats ? /*(int)t_vert.y % (int)resolution.x*/ sphere->numlats : t_vert.y;
 
-		//CALCULATIONS SHOULD BE CORRECT UP TO HERE BECAUSE t_vert == vert at this point
-		int id = std::round(std::floor(t_vert.y) * resolution.y + t_vert.x);
+		int id = std::round(std::floor(t_vert.y) * (sphere->numlats) + t_vert.x);
 		//std::cout << id << std::endl;
-		
+
 		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
 		bool vis = false;
 		for (int i : visited)
@@ -203,22 +217,15 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, 
 			continue;
 
 
-	/*	if (vert.y == 2.f)
-			std::cout << "2" << std::endl;*/
-		glm::vec3 to_center(sphere->pVertices[id * 3], sphere->pVertices[id * 3 + 1], sphere->pVertices[id * 3 + 2]);
+		/*	if (vert.y == 2.f)
+				std::cout << "2" << std::endl;*/
+		glm::vec3 to_center(sphere->verts[id]);
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * vert.y;
-		sphere->pVertices[id * 3] = target_length * to_center.x / cur_length;
-		sphere->pVertices[id * 3 + 1] = target_length * to_center.y / cur_length;
-		sphere->pVertices[id * 3 + 2] = target_length * to_center.z / cur_length;
+		sphere->verts[id] = { target_length * to_center.x / cur_length, target_length * to_center.y / cur_length, target_length * to_center.z / cur_length };
 
 		visited.push_back(id);
-
-		maxid = id > maxid ? id : maxid;
 	}
-	std::cout << maxid;
-	sphere->reload_in_memory();
-	return sphere;
 }
 
 Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, GLuint perlin_freq, GLuint scl, GLuint octaves)

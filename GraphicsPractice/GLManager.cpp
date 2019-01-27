@@ -98,14 +98,14 @@ void GLManager::init()
 	//load required textures
 	try
 	{
-		terrain_tex = SOIL_load_OGL_texture("..\\textures\\asteroid1.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		terrain_tex = SOIL_load_OGL_texture("..\\textures\\ice.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
 		if (terrain_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
 		snowflake = SOIL_load_OGL_texture("..\\textures\\snowflake.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
-		if (terrain_tex == 0)
+		if (snowflake == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
 		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
@@ -148,8 +148,9 @@ void GLManager::init_objects()
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);*/
 	
-	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 100,100, terrain_tex);
+	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000,1000, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
+	sphere->normals_enabled = false;
 
 	basic_shader.set_shininess(8.f);
 
@@ -201,8 +202,9 @@ void GLManager::update(float delta_time)
 	snow.set_view_matrix(camera.get_view_matrix());
 	//terrain->set_draw_normals(draw_normals);
 	
+	
 	sphere->set_view_matrix(camera.get_view_matrix());
-	sphere->set_draw_normals(false);
+	sphere->set_draw_normals(draw_normals);
 	//sphere->translate(glm::vec3(0, 10.f, 0));
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 	sphere->rotate(glm::radians(cursor_movement.x),glm::vec3(0,1,0));
@@ -235,7 +237,7 @@ void GLManager::update(float delta_time)
 void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	sun.draw();
+	//sun.draw();
 	sphere->drawSphere(0);
 }
 
@@ -315,6 +317,7 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		if (key_code == GLFW_KEY_N)
 		{
 			draw_normals = !draw_normals;
+			std::cout << "normals_enabled=" << draw_normals << std::endl;
 		}
 			
 
