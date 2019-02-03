@@ -74,6 +74,7 @@ private:
 	static glm::vec3 light_movement;
 	static float unaffected_time;
 	static float camera_z;
+	static int sphere_mode;
 
 	static int speed;
 

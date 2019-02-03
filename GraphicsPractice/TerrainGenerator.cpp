@@ -92,17 +92,17 @@ void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int n
 	}
 }
 
-void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts)
+void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
 {
 	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 	GLuint element_pos = 0;
 	glm::vec3 AB, AC, cross_product;
 
 	// Loop through each triangle strip  
-	for (GLuint x = 0; x < x_points - 1; x++)
+	for (GLuint y = 1; y < resolution.y - 2; y++)
 	{
 		// Loop along the strip
-		for (GLuint tri = 0; tri < z_points * 2 - 2; tri++)
+		for (GLuint tri = 0; tri < resolution.y * 2 - 2; tri++)
 		{
 			// Extract the vertex indices from the element array 
 			GLuint v1 = elements->at(element_pos);
@@ -144,34 +144,115 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
-Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlongs, int numlats, GLuint tex)
+
+void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
+{
+	//GLuint element_pos = 0;
+	//glm::vec3 AB, AC, cross_product;
+
+	//// Loop through each triangle strip  
+	//for (GLuint y = 1; y < resolution.y - 2; y++)
+	//{
+	//	// Loop along the strip
+	//	for (GLuint tri = 0; tri < resolution.y * 2 - 2; tri++)
+	//	{
+	//		// Extract the vertex indices from the element array 
+	//		GLuint v1 = elements->at(element_pos);
+	//		GLuint v2 = elements->at(element_pos+1);
+	//		GLuint v3 = elements->at(element_pos+2);
+
+	//		// Define the two vectors for the triangle
+	//		AB = verts[v2] - verts[v1];
+	//		AC = verts[v3] - verts[v1];
+
+	//		// Calculate the cross product
+	//		cross_product = glm::normalize(glm::cross(AC, AB));
+
+	//		// Add this normal to the vertex normal for all three vertices in the triangle
+	//		normals[v1] += cross_product;
+	//		normals[v2] += cross_product;
+	//		normals[v3] += cross_product;
+
+	//		/*if (v1 == 19 || v2 == 19 || v3 == 19)
+	//		{
+	//			std::cerr << v1 << " " << v2 << " " << v3 << std::endl;
+	//			std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
+	//		}*/
+
+	//		// Move on to the next vertex along the strip
+	//		element_pos++;
+	//	}
+
+	//	// Jump past the last two element positions to reach the start of the strip
+	//	element_pos += 2;
+	//}
+	//for testing
+	for (GLuint element : *elements)
+	{
+		normals[element] = glm::vec3(0, 0, 0);
+
+	}
+	verts[2] = glm::vec3(0, -2, 0);
+	//south pole
+	for (int i = 1; i < resolution.x; i++)
+	{
+		glm::vec3 AB, AC, cross;
+		AB = verts[i] - verts[0];
+		AC = verts[i+1] - verts[0];
+		cross = glm::normalize(glm::cross(AC, AB));
+		/*normals[0] += cross;
+		normals[i] += cross;
+		normals[i+1] += cross;*/
+		
+
+		normals[0] = glm::vec3(0,-1,0);
+		normals[i] = glm::vec3(0, -1, 0);
+		normals[i + 1] = glm::vec3(0, -1, 0);
+		std::cout << i << std::endl;
+	}
+
+	
+	
+
+	//normalise normals
+	for (GLuint v = 0; v < 2 + ((resolution.y - 1) * (resolution.x)); v++)
+	{
+		normals[v] = glm::normalize(normals[v]);
+	}
+
+	
+	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
+}
+
+Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, int numlongs, GLuint tex)
 {
 	Sphere* sphere = new Sphere(shader, tex);
 	sphere->makeSphere(numlats, numlongs);
 
-	this->num_longs = numlongs;
-	this->num_lats = numlats;
+	//this->num_longs = numlongs;
+	//this->num_lats = numlats;
 
-	glm::vec2 resolution(500, 100);
-	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .9f, 0.45f);
-	resolution = glm::vec2(100, 100);
-	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
-	
-	int maxid = 0;
-	glm::vec2 scale(1.f,1.f);//scaling horizontally works
-	scale.x = .2f;
-	scale.y = .6f;
-	glm::vec2 scaled_res = resolution * scale;
-	glm::vec2 shift(0,100);//x-sideways y-updown
-	//needs ridges, resolution, scale
-	apply_terrain_feature_sphere(ridge, scale, shift, sphere);
-	scale.x = .3f;
-	scale.y = .5f;
-	shift = glm::vec2(0, 300);
-	apply_terrain_feature_sphere(crater, scale, shift, sphere);
-	
-	calculate_normals(sphere->normals, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts);
-	sphere->reload_in_memory();
+	//glm::vec2 resolution(50, 50);
+	//std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .9f, 0.45f);
+	//resolution = glm::vec2(100, 100);
+	//std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
+	//
+	//int maxid = 0;
+	//glm::vec2 scale(1.f,1.f);//scaling horizontally works
+	//scale.x = .2f;
+	//scale.y = .6f;
+	//glm::vec2 shift(0,100);//x-sideways y-updown
+	////needs ridges, resolution, scale
+	//apply_terrain_feature_sphere(ridge, scale, shift, sphere);
+	//scale.x = .3f;
+	//scale.y = .5f;
+	//shift = glm::vec2(0, 300);
+	//apply_terrain_feature_sphere(crater, scale, shift, sphere);
+	//
+	//glm::vec3* temp = sphere->normals;
+	//calculate_normals_sphere(temp, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts, glm::vec2(sphere->numlongs, sphere->numlats));
+	//sphere->normals = temp;
+	//sphere->reload_in_memory();
 	return sphere;
 }
 
@@ -392,7 +473,7 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 #pragma endregion
 
 	std::cerr << "Calculating terrain normals" << std::endl;
-	calculate_normals(normals, elements, verts);
+	calculate_normals(normals, elements, verts, glm::vec2(x_points,z_points));
 	
 	Terrain* temp = new Terrain(x_points, verts, (int)num_verts, colours, &(elements->at(0)), elements->size(), normals,texcoords, terrain_texture);
 	return temp;

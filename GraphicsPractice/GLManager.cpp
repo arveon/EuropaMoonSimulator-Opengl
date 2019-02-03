@@ -19,6 +19,7 @@ bool GLManager::texture_enabled = true;
 bool GLManager::light_enabled = true;
 bool GLManager::colour_enabled = false;
 bool GLManager::draw_normals = false;
+int GLManager::sphere_mode = 0;
 
 glm::vec3 GLManager::cursor_movement;
 
@@ -154,8 +155,8 @@ void GLManager::init_objects()
 
 	basic_shader.set_shininess(8.f);
 
-	sun = Lightsource(lightsource_shader);
-	sun.set_scale(glm::vec3( .3f, .3f, .3f));
+	/*sun = Lightsource(lightsource_shader);
+	sun.set_scale(glm::vec3( .3f, .3f, .3f));*/
 
 	GLManager::print_controls();
 }
@@ -198,7 +199,7 @@ void GLManager::update(float delta_time)
 	//set view matrix in objects that need it
 	//terrain->set_view_matrix(camera.get_view_matrix());
 	test.set_view_matrix(camera.get_view_matrix());
-	sun.set_view_matrix(camera.get_view_matrix());
+	//sun.set_view_matrix(camera.get_view_matrix());
 	snow.set_view_matrix(camera.get_view_matrix());
 	//terrain->set_draw_normals(draw_normals);
 	
@@ -215,7 +216,7 @@ void GLManager::update(float delta_time)
 	//manipulate and draw other objects
 	glm::vec3 campos = camera.get_position();
 	campos.y += 2;
-	sun.move_to(glm::vec4(campos,1));
+	//sun.move_to(glm::vec4(campos,1));
 	//terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
 
@@ -238,7 +239,7 @@ void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//sun.draw();
-	sphere->drawSphere(0);
+	sphere->drawSphere(sphere_mode);
 }
 
 void GLManager::terminate()
@@ -319,6 +320,9 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 			draw_normals = !draw_normals;
 			std::cout << "normals_enabled=" << draw_normals << std::endl;
 		}
+
+		if (key_code == GLFW_KEY_M)
+			sphere_mode = (sphere_mode < 2) ? ++sphere_mode:0;
 			
 
 		//toggle attenuation
