@@ -149,7 +149,7 @@ void GLManager::init_objects()
 	terrain->set_shader(basic_shader);
 	terrain->set_normal_shader(normals_shader);*/
 	
-	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 10,10, terrain_tex);
+	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 100,100, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
 	sphere->normals_enabled = false;
 

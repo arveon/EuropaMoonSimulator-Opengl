@@ -147,13 +147,14 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 
 void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
 {
-	//for testing
-	for (GLuint element : *elements)
+	//for testing (so it's easy to spot verts that weren't covered by stages below
+	/*for (GLuint element : *elements)
 	{
 		normals[element] = glm::vec3(0, 0, 0);
-	}
+	}*/
 
-	//south pole(WORKING)
+	/*STAGE ONE*/
+	//south pole
 	for (int i = 1; i <= resolution.x+1; i++)
 	{
 		glm::vec3 AB, AC, cross;
@@ -166,116 +167,76 @@ void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector
 		normals[second] += cross;
 		std::cout << 0 << " " << second << " " << i << std::endl;
 	}
-	//1,11,10 are at the same point in space in this case so need to make sure their normals are the same
-	//because 1 is start
-	//11 is assigned same as start so the triangle strip 100% joins
-	//10 is there because it aligned well in this specific case, but potentially it won't be aligned
-	//this will need to be applied the same way to every triangle strip
-	normals[(int)resolution.x] = normals[(int)resolution.x+1] = normals[1];
-
-
-	////calculating normals for latitudes
-	//for (int i = 1; i < resolution.y-2; i++)
-	//{
-	//	int a, b, c, d;
-	//	for (int j = 0; j < resolution.x; j++)
-	//	{
-	//		//arrangement of points
-	//		// **b---d** 
-	//		// **|*/*|**
-	//		// **a---c**
-	//		//abd, adc
-
-	//		//calculate participating indices for square
-	//		a = 1 + i * (resolution.x + 1) + j;
-	//		c = a+1;
-	//		b = 1 + (i - 1) * (resolution.x+1) + j;
-	//		d = b + 1;
-
-	//		//calculate cross product
-	//		glm::vec3 A = verts[elements->at(a)];
-	//		glm::vec3 B = verts[elements->at(b)];
-	//		glm::vec3 C = verts[elements->at(c)];
-	//		glm::vec3 D = verts[elements->at(d)];
-	//		glm::vec3 AB, AC, AD, cross1, cross2;
-
-	//		AB = A - B;
-	//		AC = A - C;
-	//		AD = A - D;
-
-	//		cross1 = glm::normalize(glm::cross(AB, AD));
-	//		cross2 = glm::normalize(glm::cross(AD, AC));
-
-	//		//apply cross products that are applicable to verts
-	//		normals[elements->at(a)] += cross1 + cross2;
-	//		normals[elements->at(d)] += cross1 + cross2;
-
-	//		normals[elements->at(b)] += cross1;
-	//		normals[elements->at(c)] += cross2;
-
-
-	//		std::cout << a << " " << b << " " << d << std::endl;
-	//		std::cout << a << " " << d << " " << c << std::endl << std::endl;
-	//	}
-
-	//	//calculate wrapped around (end of row to start of row)
-	//	c = i * (resolution.x + 1) + 1;
-	//	d = (i - 1) * (resolution.x + 1) + 1;
-
-	//	//calculate cross product
-	//	glm::vec3 A = verts[elements->at(a)];
-	//	glm::vec3 B = verts[elements->at(b)];
-	//	glm::vec3 C = verts[elements->at(c)];
-	//	glm::vec3 D = verts[elements->at(d)];
-	//	glm::vec3 AB, AC, AD, cross1, cross2;
-	//	AB = A - B;
-	//	AC = A - C;
-	//	AD = A - D;
-
-	//	cross1 = glm::normalize(glm::cross(AB, AD));
-	//	cross2 = glm::normalize(glm::cross(AD, AC));
-
-	//	normals[elements->at(a)] += cross1 + cross2;
-	//	normals[elements->at(d)] += cross1 + cross2;
-
-	//	normals[elements->at(b)] += cross1;
-	//	normals[elements->at(c)] += cross2;
-
-	//	std::cout << a << " " << b << " " << d << std::endl;
-	//	std::cout << a << " " << d << " " << c << std::endl << std::endl;
-
-
-	//}
 	
-	//north pole (WORKING)
+
+	/*STAGE TWO*/
+	//calculating normals for latitudes
+	for (int i = 1; i < resolution.y-2; i++)
+	{
+		std::cout << "i: " << i << std::endl;
+		int a, b, c, d;
+		for (int j = 0; j < resolution.x; j++)
+		{
+			int cur_elem = 1 + i * (resolution.x + 1) + j;
+			int b = cur_elem - (resolution.x + 1);
+			int d = b + 1;
+			int c = cur_elem + 1;
+
+			//verts
+			glm::vec3 A = verts[cur_elem];
+			glm::vec3 B = verts[b];
+			glm::vec3 C = verts[c];
+			glm::vec3 D = verts[d];
+			
+			glm::vec3 AB, AC, AD, cross1, cross2;
+			AB = A - B;
+			AC = A - C;
+			AD = A - D;
+
+			cross1 = glm::normalize(glm::cross(AD, AB));
+			cross2 = glm::normalize(glm::cross(AC, AD));
+
+			normals[cur_elem] += cross1 + cross2;
+			normals[d] += cross1 + cross2;
+			normals[b] += cross1;
+			normals[c] += cross2;
+		}		
+	}
+
+	/*STAGE THREE*/
+	//north pole
 	int num_verts = 2 + ((resolution.y - 2) * (resolution.x + 1));
-	for (int i = num_verts - 2; i >= (num_verts - (resolution.x+2)); i--)
+	for (int i = num_verts - 2; i >= (num_verts - (resolution.x + 2)); i--)
 	{
 		glm::vec3 AB, AC, cross;
 		AB = verts[i] - verts[num_verts - 1];
 
-		int second = i - 1 < num_verts - resolution.x - 2 ? num_verts-4 : i - 1;
+		int second = i - 1 < num_verts - resolution.x - 2 ? num_verts - 4 : i - 1;
 		AC = verts[second] - verts[num_verts - 1];
 
 		cross = glm::normalize(glm::cross(AB, AC));
 		normals[num_verts - 1] += cross;
 		normals[i] += cross;
 		normals[second] += cross;
-		
-			
-		std::cout << num_verts-1 << " " << second << " " << i << std::endl;
+	}
+
+
+	/*STAGE FOUR*/
+	//1,11,10 are at the same point in space (assuming 10 longs and 10 lats sphere) in this case so need to make sure their normals are the same
+	//because 1 is start
+	//11 is assigned same as 1 so the triangle strip 100% joins
+	//10 is there because it aligned well in this specific case, but potentially it might not be aligned
+	//this will need to be applied the same way to every triangle strip
+	normals[(int)resolution.x] = normals[(int)resolution.x + 1] = normals[1];
+	//MAKE ALL THREE NORMALS AT END OF EACH LAT EQUAL
+	for (int i = 1; i < resolution.y - 2; i++)
+	{	
+		int line_start = 1 + i * ((int)resolution.x + 1);
+		int line_last = line_start + resolution.x;
+		normals[line_last] = normals[line_last - 1] = normals[line_start];
 	}
 	//same as for south pole
 	 normals[num_verts-2] = normals[num_verts-3] = normals[num_verts-((int)resolution.x+1)-1];
-
-	//////normalise normals
-	//for (GLuint v = 0; v < 2 + ((resolution.y - 2) * (resolution.x+1)); v++)
-	//{
-	//	normals[v] = glm::normalize(normals[v]);
-	//}
-
-	
-	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
 Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, int numlongs, GLuint tex)
@@ -286,23 +247,23 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 	this->num_longs = numlongs;
 	this->num_lats = numlats;
 
-	//glm::vec2 resolution(98, 100);
-	//std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .9f, 0.45f);
+	glm::vec2 resolution(100, 100);
+	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.03f, .9f, 0.35f);
 	//resolution = glm::vec2(98, 100);
 	//std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
-	//
-	//int maxid = 0;
-	//glm::vec2 scale(1.f,1.f);
-	//scale.x = 1.f;
-	//scale.y = 1.f;
-	//glm::vec2 shift(0,00);//x-sideways y-updown
-	////needs ridges, resolution, scale
-	//apply_terrain_feature_sphere(ridge, scale, shift, sphere);
-	///*scale.x = .5f;
-	//scale.y = .5f;
-	//shift = glm::vec2(0, 000);
-	//apply_terrain_feature_sphere(crater, scale, shift, sphere);*/
-	//
+	
+	int maxid = 0;
+	glm::vec2 scale(1.f,1.f);
+	scale.x = 0.2f;
+	scale.y = 1.f;
+	glm::vec2 shift(-3,00);//x-sideways y-updown
+	//needs ridges, resolution, scale
+	apply_terrain_feature_sphere(ridge, scale, shift, sphere, resolution);
+	/*scale.x = .5f;
+	scale.y = .5f;
+	shift = glm::vec2(0, 000);
+	apply_terrain_feature_sphere(crater, scale, shift, sphere);*/
+	
 	glm::vec3* temp = sphere->normals;
 	calculate_normals_sphere(temp, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts, glm::vec2(sphere->numlongs, sphere->numlats));
 	sphere->normals = temp;
@@ -310,7 +271,7 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 	return sphere;
 }
 
-void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere)
+void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere, glm::vec2 feature_resolution)
 {
 	std::vector<int> visited;
 	for (glm::vec3 v : feature)
@@ -328,18 +289,23 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 		t_vert.y = shift.y + t_vert.y;
 		t_vert.x = shift.x + t_vert.x;
 
-		//horizontal (more maths to allow to wrap around
-		t_vert.x = t_vert.x < 0 ? ((int)sphere->numlongs+1 - (int)t_vert.x) % (int)sphere->numlongs+1 : t_vert.x;
-		t_vert.x = t_vert.x > sphere->numlongs+1 ? (int)t_vert.x % (int)sphere->numlongs : t_vert.x;
-		//vertical (shouldn't wrap around
-		t_vert.y = t_vert.y <= 0 ? 1 : t_vert.y;
-		t_vert.y = t_vert.y >= sphere->numlats ?  sphere->numlats : t_vert.y;
+		////horizontal (more maths to allow to wrap around
+		//t_vert.x = t_vert.x < 0 ? ((int)sphere->numlongs+1 - (int)t_vert.x) % (int)sphere->numlongs+1 : t_vert.x;
+		//t_vert.x = t_vert.x > sphere->numlongs+1 ? (int)t_vert.x % (int)sphere->numlongs : t_vert.x;
+		////vertical (shouldn't wrap around
+		//t_vert.y = t_vert.y <= 0 ? 1 : t_vert.y;
+		//t_vert.y = t_vert.y >= sphere->numlats ?  sphere->numlats : t_vert.y;
 
-		int id = std::round(std::floor(t_vert.y-1) * (sphere->numlongs+1) + t_vert.x+1);
-		if(id > 9900)
-			std::cout << id << std::endl;
-		if (id <= 0)
-			std::cout << id << std::endl;
+		//convert feature coords to sphere coords?
+		glm::vec2 vert_on_sphere;
+		vert_on_sphere.x = t_vert.x / feature_resolution.y * (float)sphere->numlongs;
+		vert_on_sphere.y = t_vert.y / feature_resolution.x * (sphere->numlats - 3);
+
+		int id = std::round(std::floor(vert_on_sphere.y) * (sphere->numlongs+1) + std::floor(vert_on_sphere.x)) + 1;
+		//if(id >= 90)
+		//	std::cout << id << std::endl;
+		//if (id <= 0)
+		//	std::cout << id << std::endl;
 
 		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
 		bool vis = false;
@@ -362,7 +328,18 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 		float target_length = cur_length * vert.y;
 		sphere->verts[id] = { target_length * to_center.x / cur_length, target_length * to_center.y / cur_length, target_length * to_center.z / cur_length };
 
+		
+
 		visited.push_back(id);
+	}
+
+	//join last vertex in each line to 0th vertex of line so there is never a gap
+	for (int i = 1; i < sphere->numlats - 2; i++)
+	{
+		int line_start = 1 + i * ((int)sphere->numlongs + 1);
+		int line_last = line_start + sphere->numlongs;
+
+		sphere->verts[line_start] = sphere->verts[line_last];
 	}
 }
 

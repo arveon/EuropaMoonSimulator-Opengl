@@ -281,10 +281,6 @@ void Sphere::makeUnitSphere(glm::vec3* verts, GLfloat* texcoords)
 		texcoords[cur_vert * 2+1] = v;
 		cur_vert++;
 
-		//test2++;
-		//std::cout << "test2 " << test2 << std::endl;
-		//std::cout << test++ << " of " << numlats - 1 << std::endl;
-
 	}
  	//north pole
 	verts[cur_vert] = { 0.f, 1.f, 0.f };
