@@ -64,7 +64,7 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 	GLfloat* pColours = new GLfloat[num_verts * 4];
 	makeUnitSphere(verts, pTexCoords);
 
-	///* Define colours as the x,y,z components of the sphere vertices */
+	/* Define colours as the x,y,z components of the sphere vertices */
 	for (i = 0; i < num_verts; i++)
 	{
 		pColours[i * 4] = verts[i].x;
