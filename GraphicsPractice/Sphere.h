@@ -18,7 +18,6 @@ class Sphere : public Drawable
 {
 private:
 	friend class TerrainGenerator;
-	Shader shader = NULL;
 public:
 	Sphere(Shader shader, GLuint textureID = NULL);
 	Sphere();
@@ -44,7 +43,7 @@ public:
 	unsigned int numlats;
 	unsigned int numlongs;
 	int drawmode;
-	void set_shader(Shader shader) { this->shader = shader; Drawable::shader_program = shader; }
+	void set_shader(Shader shader) { this->shader_program = shader; }
 	void set_texture(GLuint texture) { Drawable::texture_id = texture; }
 private:
 	void draw(int drawmode);

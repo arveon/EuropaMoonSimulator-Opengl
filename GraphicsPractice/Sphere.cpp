@@ -16,7 +16,7 @@ Make these match your application and vertex shader
 You might also want to add colours and texture coordinates */
 Sphere::Sphere(Shader shader, GLuint textureID)
 {
-	this->shader = shader;
+	this->shader_program = shader;
 	attribute_v_coord = 0;
 	attribute_v_colours = 1;
 	attribute_v_normal = 2;
@@ -310,10 +310,10 @@ void Sphere::reload_in_memory()
 void Sphere::drawSphere(int drawmode)
 {
 
-	shader.set_model_view_matrix(view_matrix*model_matrix);
+	shader_program.set_model_view_matrix(view_matrix*model_matrix);
 	normals_shader.set_model_view_matrix(view_matrix*model_matrix);
 
-	glUseProgram(shader.get_program_id());
+	glUseProgram(shader_program.get_program_id());
 	Sphere::draw(drawmode);
 	glUseProgram(0);
 
