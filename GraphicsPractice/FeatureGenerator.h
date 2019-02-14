@@ -16,6 +16,7 @@ public:
 	static std::vector<glm::vec3> generate_ridge(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width);
 	static std::vector<glm::vec3>  generate_crater(glm::vec2 resolution, float height, float radius);
 
+	static std::vector<glm::vec3> generate_ridge_sphere_angle(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width, float angle);
 	static std::vector<glm::vec3> generate_ridge_sphere(glm::vec2 resolution, float peak_height, float mid_low, float ridge_width);
 
 	FeatureGenerator();
