@@ -247,36 +247,44 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 	this->num_longs = numlongs;
 	this->num_lats = numlats;
 
+	int* visited = new int[sphere->num_verts];
+	for (int i = 0; i < sphere->num_verts; i++)
+		visited[i] = 0;
+
 	glm::vec2 resolution(1000, 1000);
 	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.35f);
-	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.005f, .99f, 0.25f);
-	//resolution = glm::vec2(98, 100);
-	//std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
+	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.25f);
+	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
 	
 	int maxid = 0;
-	glm::vec2 scale;
+	glm::vec2 scale, shift;//x-sideways y-updown
+
+	//Apply craters
+	scale.x = .05f;
+	scale.y = .1f;
+	shift = glm::vec2(0, 200);
+	apply_terrain_feature_sphere(crater, scale, shift, sphere, resolution, visited);
+
+	//Apply ridges
+	shift = glm::vec2(100, 300);
 	scale.x = .005f;
 	scale.y = .1f;
-	glm::vec2 shift(100,300);//x-sideways y-updown
-	//needs ridges, resolution, scale
+	//groups of small ridges
 	for (int i = 0; i < 5; i++)
 	{
-		apply_terrain_feature_sphere(tiny_ridge, scale, shift, sphere, resolution);
+		apply_terrain_feature_sphere(tiny_ridge, scale, shift, sphere, resolution,visited);
 		shift.x += 5;
 	}
 
+	//bigger ridges
 	float angle = 30;
 	scale.x = 0.015f;
-	shift.x -= 30;
+	shift.x -= 5;
 	for (int i = 0; i < 5; i++)
 	{
-		apply_terrain_feature_sphere(ridge, scale, shift, sphere, resolution, angle);
+		apply_terrain_feature_sphere(ridge, scale, shift, sphere, resolution,visited, angle);
 		shift.x -= 20;
 	}
-	/*scale.x = .5f;
-	scale.y = .5f;
-	shift = glm::vec2(0, 000);
-	apply_terrain_feature_sphere(crater, scale, shift, sphere);*/
 	
 	glm::vec3* temp = sphere->normals;
 	calculate_normals_sphere(temp, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts, glm::vec2(sphere->numlongs, sphere->numlats));
@@ -285,43 +293,37 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 	return sphere;
 }
 
-void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere, glm::vec2 feature_resolution, float rotation_angle)
+void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere, glm::vec2 feature_resolution, int* visited, float rotation_angle)
 {
-	//std::vector<int> visited;
-
-	int* visited = new int[sphere->num_verts];
-	for (int i = 0; i < sphere->num_verts; i++)
-		visited[i] = 0;
-
-	int a = 0;
-	
 	for (glm::vec3 v : feature)
 	{
 		glm::vec3 vert = v;
 
 		//feature resolution to sphere resolution
 		glm::vec2 t_vert;
-		t_vert.x = /*(sphere->numlongs-1)/ resolution.x **/ vert.x;
-		t_vert.y = /*(sphere->numlats) / resolution.y **/ vert.z;//shift everything from 0 - x range to 1 - x+1
+		t_vert.x =  vert.x;
+		t_vert.y = vert.z;
 
 		//convert feature coords to sphere coords?
 		glm::vec2 vert_on_sphere;
 		vert_on_sphere.x = t_vert.x / feature_resolution.y * (float)sphere->numlongs;
 		vert_on_sphere.y = t_vert.y / feature_resolution.x * (sphere->numlats - 3);
 
+		//apply scaling
 		vert_on_sphere.x *= scale.x;
 		vert_on_sphere.y *= scale.y;
 
-		//rotate
+		//apply rotation
 		int terr_rotatedx = std::floor((float)vert_on_sphere.x * glm::cos(glm::radians(rotation_angle)) - (float)vert_on_sphere.y * glm::sin(glm::radians(rotation_angle)));
 		int terr_rotatedz = std::floor((float)vert_on_sphere.y * glm::cos(glm::radians(rotation_angle)) + (float)vert_on_sphere.x * glm::sin(glm::radians(rotation_angle)));
 		vert_on_sphere.x = terr_rotatedx;
 		vert_on_sphere.y = terr_rotatedz;
 
+		//apply shift
 		vert_on_sphere.y += shift.y;
 		vert_on_sphere.x += shift.x;
 
-		//horizontal (more maths to allow to wrap around)//IF X GOES BELOW 0, ROTATED RIDGE REFLECTS OFF 0?!
+		//horizontal (allow to wrap around)
 		int nl = sphere->numlongs;
 		vert_on_sphere.x = vert_on_sphere.x < 0 ? nl - std::abs(((int)vert_on_sphere.x % nl)) : vert_on_sphere.x;
 		vert_on_sphere.x = vert_on_sphere.x >= nl-1 ? (int)vert_on_sphere.x % nl : vert_on_sphere.x;
@@ -329,119 +331,19 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 		vert_on_sphere.y = vert_on_sphere.y <= 0 ? 1 : vert_on_sphere.y;
 		vert_on_sphere.y = vert_on_sphere.y >= sphere->numlats-3 ? sphere->numlats-4 : vert_on_sphere.y;
 
-		//this ensures that rows don't get shifted and feature is properly translated
-		/*if (vert_on_sphere.x >= sphere->numlongs || 
-			vert_on_sphere.y >= sphere->numlats-3 || 
-			vert_on_sphere.x < 0 || 
-			vert_on_sphere.y < 0)
-			continue;*/
-
 		int id = std::round(std::floor(vert_on_sphere.y) * (sphere->numlongs+1) + std::floor(vert_on_sphere.x)) + 1;
-		//if(id >= 90)
-		//	std::cout << id << std::endl;
-		//if (id <= 0)
-		//	std::cout << id << std::endl;
 
-		//safeguard against exagerrating features when scaling down (same point isn't moved twice)
-		/*bool vis = false;
-		for (int i : visited)
-		{
-			if (i == id)
-			{
-				vis = true;
-				break;
-			}
-		}
-		if (vis)
-			continue;*/
-
+		//make sure vert wasn't visited before
 		if (visited[id] == 1)
 			continue;
 
-
-		/*	if (vert.y == 2.f)
-				std::cout << "2" << std::endl;*/
 		glm::vec3 to_center(sphere->verts[id]);
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * vert.y;
 		sphere->verts[id] = { target_length * to_center.x, target_length * to_center.y, target_length * to_center.z };
-		//visited.push_back(id);
+		//set flag that vert was visited
 		visited[id] = 1;
-		
-		/*if(a%100==0)
-			std::cout << a << std::endl;
-		a++;*/
-	}
-
-
-
-		/*std::vector<int> visited_indices;
-	//for every vertical row, scan all elements
-
-	glm::vec2 center = glm::vec2(feature_resolution.x / 2, feature_resolution.y / 2);
-
-	for (glm::vec3 vert : feature)
-	{
-		static int prev_rotatex = 0;
-
-		//get coordinates of that vert on terrain
-		int terr_x = (vert.x * feature_scale.x + feature_position.x);
-		int terr_z = (vert.z * feature_scale.y + feature_position.y);
-		int terr_x = ((vert.x-center.x) * feature_scale.x + feature_position.x);
-		int terr_z = ((vert.z-center.y) * feature_scale.y + feature_position.y);
-		int terr_x = vert.x - center.x;
-		int terr_z = vert.z - center.y;
-
-		//attempt rotation
-		int terr_rotatedx = std::floor((float)terr_x * glm::cos(glm::radians(rotation)) - (float)terr_z * glm::sin(glm::radians(rotation)));
-		int terr_rotatedz = std::floor((float)terr_z * glm::cos(glm::radians(rotation)) + (float)terr_x * glm::sin(glm::radians(rotation)));
-
-		terr_x += terr_rotatedx;
-		terr_z += terr_rotatedx;
-		terr_x = terr_rotatedx + center.x;
-		terr_z = terr_rotatedx + center.y;
-
-
-
-		//this ensures that rows don't get shifted and feature is properly translated
-		if (terr_x >= terrain_resolution.x || terr_z >= terrain_resolution.y || terr_x < 0 || terr_z < 0)
-			continue;
-
-		int terr_ind = terr_z * terrain_resolution.y + terr_x;
-
-		//check if index was used and if it was, go to next iteration
-			//this avoids adding values multiple times to same index
-		bool done = false;
-		for (int i = 0; i < visited_indices.size(); i++)
-			if (visited_indices.at(i) == terr_ind)
-			{
-				done = true;
-				break;
-			}
-
-		if (done)
-			continue;
-		////check if index was used and if it was, go to next iteration
-		//	//this avoids adding values multiple times to same index
-		//bool done = false;
-		//for (int i = 0; i < visited_indices.size(); i++)
-		//	if (visited_indices.at(i) == terr_ind)
-		//	{
-		//		done = true;
-		//		break;
-		//	}
-
-		//if (done)
-		//	continue;
-
-		//just a safeguard
-		if (terr_ind < 0)
-			continue;
-		terrain[terr_ind].y += vert.y;
-		visited_indices.push_back(terr_ind);
-	}
-}*/
-	
+	}	
 
 	//join last vertex in each line to 0th vertex of line so there is never a gap
 	for (int i = 1; i < sphere->numlats - 2; i++)
