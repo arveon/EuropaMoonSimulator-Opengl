@@ -49,9 +49,11 @@ private:
 	Shader particle_shader = NULL;
 
 	GLuint terrain_tex;
+	GLuint skybox_tex;
 	GLuint snowflake;
 
 	Cube test;
+	Cube* skybox;
 	
 	Lightsource sun;
 

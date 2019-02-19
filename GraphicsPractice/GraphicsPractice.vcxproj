@@ -158,6 +158,7 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TerrainGenerator.h" />
     <ClInclude Include="tiny_obj_loader.h" />
+    <ClInclude Include="UserPrefs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\lit_textured.frag" />

@@ -144,11 +144,6 @@ void GLManager::init_objects()
 	snow.set_texture(snowflake);
 	snow.create_particles(terrain_size.x+20, terrain_size.y+20,3,8,30);
 
-	/*terrain_gen.set_texture(terrain_tex);
-	terrain = terrain_gen.create_terrain(terrain_res.x, terrain_res.y, terrain_size.x, terrain_size.y, terr_frequency,terr_scale, terr_octaves);
-	terrain->set_shader(basic_shader);
-	terrain->set_normal_shader(normals_shader);*/
-	
 	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000,1000, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
 	sphere->normals_enabled = false;
@@ -196,28 +191,20 @@ void GLManager::update(float delta_time)
 	unlit_texture_shader.set_projection_matrix(projection);
 	normals_shader.set_projection_matrix(projection);
 
-	//set view matrix in objects that need it
-	//terrain->set_view_matrix(camera.get_view_matrix());
-	test.set_view_matrix(camera.get_view_matrix());
-	//sun.set_view_matrix(camera.get_view_matrix());
 	snow.set_view_matrix(camera.get_view_matrix());
-	//terrain->set_draw_normals(draw_normals);
-	
 	
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(draw_normals);
-	//sphere->translate(glm::vec3(0, 10.f, 0));
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 	sphere->rotate(glm::radians(cursor_movement.x),glm::vec3(0,1,0));
 	sphere->rotate(glm::radians(-cursor_movement.y), glm::vec3(1, 0, 0));
 
-
+	
 
 	//manipulate and draw other objects
 	glm::vec3 campos = camera.get_position();
 	campos.y += 2;
 	//sun.move_to(glm::vec4(campos,1));
-	//terrain->translate(glm::vec3(-terrain_size.x/2, -5, -terrain_size.y/2));
 	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
 
 	//set the light position in lit shader
@@ -240,6 +227,7 @@ void GLManager::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//sun.draw();
 	sphere->drawSphere(sphere_mode);
+	snow.draw_particles();
 }
 
 void GLManager::terminate()
