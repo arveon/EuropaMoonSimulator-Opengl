@@ -1,5 +1,7 @@
 /*	by Aleksejs Loginovs - November 2018 
+	Class contains:
 	basic terrain generation code adapted from Iain Martin's example code
+	sphere terrain generation code written by Aleksejs Loginovs
 */
 #pragma once
 

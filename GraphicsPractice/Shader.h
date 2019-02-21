@@ -1,5 +1,7 @@
 /* by Aleksejs Loginovs - October 2018 */
-
+/*
+Class represents a shader and has all the methods to manipulate values/uniforms inside it
+*/
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -9,7 +11,7 @@
 
 #include "Constants.h"
 
-//Class represents a shader and has all the methods to manipulate values/uniforms inside it
+
 class Shader
 {
 private:

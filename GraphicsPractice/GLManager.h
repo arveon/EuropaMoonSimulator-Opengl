@@ -1,5 +1,9 @@
 /* by Aleksejs Loginovs - October 2018 */
-
+/*
+Class that triggers everything else in the program
+Contains the loop, update and draw methods
+Is responsible for loading resources and initialising objects
+*/
 #pragma once
 #define GLEW_STATIC
 
@@ -40,36 +44,27 @@ class GLManager
 {
 private:
 	GLFWwindow * win;
-
 	EventManager events;
+
+	//shaders
 	Shader basic_shader = NULL;
 	Shader lightsource_shader = NULL;
 	Shader unlit_texture_shader = NULL;
 	Shader normals_shader = NULL;
 	Shader particle_shader = NULL;
 
+	//textures
 	GLuint terrain_tex;
 	GLuint skybox_tex;
-	GLuint snowflake;
 
-	Cube test;
+	//objects in the scene
 	Cube* skybox;
-	
 	Lightsource sun;
-
-	Drawable* statue;
-	Terrain* terrain;
 	Sphere* sphere;
 
-	glm::vec2 terrain_res;
-	glm::vec2 terrain_size;
-	GLuint terr_frequency;
-	GLuint terr_scale;
-	GLuint terr_octaves;
-
 	TerrainGenerator terrain_gen;
-	ParticleSystem snow;
 
+	//control variables
 	static glm::vec3 cursor_movement;
 	static Camera camera;
 	static GLfloat aspect_ratio;
@@ -78,8 +73,7 @@ private:
 	static float camera_z;
 	static int sphere_mode;
 
-	static int speed;
-
+	//controll toggles
 	static bool reset;
 	static bool show_cursor;
 	static bool attenuation_enabled;
@@ -88,9 +82,12 @@ private:
 	static bool colour_enabled;
 	static bool draw_normals;
 	static bool close;
-
-	unsigned int depthMapFBO;
-	unsigned int depthMap;
+	
+	static int speed;
+	
+	//TESTING
+	/*unsigned int depthMapFBO;
+	unsigned int depthMap;*/
 
 	void reset_scene();
 public:

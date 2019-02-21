@@ -1,5 +1,8 @@
 /* by Aleksejs Loginovs - October 2018 */
 
+/*
+Class contains callbacks for actions like cursor move, click etc.
+*/
 #pragma once
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>

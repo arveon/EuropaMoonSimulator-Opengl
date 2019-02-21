@@ -1,5 +1,7 @@
 /* by Aleksejs Loginovs - October 2018 */
-
+/*
+Class represents a lightsource and places a white sphere in the position of the light
+*/
 #pragma once
 
 #include "Shader.h"

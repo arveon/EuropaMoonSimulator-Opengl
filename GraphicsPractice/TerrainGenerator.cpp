@@ -2,12 +2,10 @@
 Responsible for generating a chunk of terrain and placing features on it.
 by Aleksejs Loginovs - Nov 2018
 basic terrain generation parts adapted from Iain Martin's basic terrain generation example
+has methods for generating a sphere object with terrain placed on top and a flat piece of terrain
 */
 
-
 #include "TerrainGenerator.h"
-
-
 
 GLfloat * TerrainGenerator::calculate_noise(GLuint x_size, GLuint z_size, GLuint octaves, GLuint frequency, GLuint scl)
 {
@@ -51,6 +49,9 @@ GLfloat * TerrainGenerator::calculate_noise(GLuint x_size, GLuint z_size, GLuint
 	return noise;
 }
 
+/*
+Function used to make sure the height of all the points is between min and max
+*/
 void TerrainGenerator::scale_heights(int min, int max, glm::vec3* verts, int num_verts)
 {
 	GLfloat cmin, cmax;
@@ -71,6 +72,9 @@ void TerrainGenerator::scale_heights(int min, int max, glm::vec3* verts, int num
 	}
 }
 
+/*
+Function used to make sure the colour of all the points is between min and max
+*/
 void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int num_verts)
 {
 	GLfloat cmin, cmax;
@@ -92,6 +96,9 @@ void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int n
 	}
 }
 
+/*
+Function used to calculate normals for all verts in a flat DEM
+*/
 void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
 {
 	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
@@ -144,15 +151,11 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
-
+/*
+Function used to calculate normals for all verts in a sphere
+*/
 void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
 {
-	//for testing (so it's easy to spot verts that weren't covered by stages below
-	/*for (GLuint element : *elements)
-	{
-		normals[element] = glm::vec3(0, 0, 0);
-	}*/
-
 	/*STAGE ONE*/
 	//south pole
 	for (int i = 1; i <= resolution.x+1; i++)
@@ -165,7 +168,6 @@ void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector
 		normals[0] += cross;
 		normals[i] += cross;
 		normals[second] += cross;
-		//std::cout << 0 << " " << second << " " << i << std::endl;
 	}
 	
 
@@ -173,7 +175,6 @@ void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector
 	//calculating normals for latitudes
 	for (int i = 1; i < resolution.y-2; i++)
 	{
-		//std::cout << "i: " << i << std::endl;
 		int a, b, c, d;
 		for (int j = 0; j < resolution.x; j++)
 		{
@@ -239,26 +240,33 @@ void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector
 	 normals[num_verts-2] = normals[num_verts-3] = normals[num_verts-((int)resolution.x+1)-1];
 }
 
+/*
+Function used to generate a sphere with terrain on it
+*/
 Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, int numlongs, GLuint tex)
 {
+	//generate the sphere
 	Sphere* sphere = new Sphere(shader, tex);
 	sphere->makeSphere(numlats, numlongs);
 
 	this->num_longs = numlongs;
 	this->num_lats = numlats;
 
+	//keep track of all visited verts to make sure same vert isn't modified twice
 	int* visited = new int[sphere->num_verts];
 	for (int i = 0; i < sphere->num_verts; i++)
 		visited[i] = 0;
 
+	//generate the features that will be replicated across the surface
 	glm::vec2 resolution(1000, 1000);
 	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.35f);
 	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.25f);
 	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
 	
+
+	//replicate the features across surface
 	int maxid = 0;
 	glm::vec2 scale, shift;//x-sideways y-updown
-
 	//Apply craters
 	scale.x = .05f;
 	scale.y = .1f;
@@ -286,13 +294,18 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 		shift.x -= 20;
 	}
 	
+	//calculate normals and apply all the changes by reloading it in the memory
 	glm::vec3* temp = sphere->normals;
 	calculate_normals_sphere(temp, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts, glm::vec2(sphere->numlongs, sphere->numlats));
 	sphere->normals = temp;
 	sphere->reload_in_memory();
+
 	return sphere;
 }
 
+/*
+Function responsibe for applying a DEM of a feature to the surface of the sphere
+*/
 void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere, glm::vec2 feature_resolution, int* visited, float rotation_angle)
 {
 	for (glm::vec3 v : feature)
@@ -337,10 +350,12 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 		if (visited[id] == 1)
 			continue;
 
+		//actually apply the transformation
 		glm::vec3 to_center(sphere->verts[id]);
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * vert.y;
 		sphere->verts[id] = { target_length * to_center.x, target_length * to_center.y, target_length * to_center.z };
+
 		//set flag that vert was visited
 		visited[id] = 1;
 	}	
@@ -355,6 +370,9 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 	}
 }
 
+/*
+Function is used to generate a flat piece of terrain with features appied to it
+*/
 Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_world, float z_world, GLuint perlin_freq, GLuint scl, GLuint octaves)
 {
 	std::cerr << "Generating terrain:" << std::endl;
@@ -525,6 +543,9 @@ Terrain* TerrainGenerator::create_terrain(int xpoints, int zpoints, float x_worl
 	return temp;
 }
 
+/*
+Function used to apply a feature DEM to a flat piece of terrain
+*/
 void TerrainGenerator::apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation,bool is_crater)
 {
 	bool** visited = new bool*[terrain_resolution.y];

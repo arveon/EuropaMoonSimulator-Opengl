@@ -51,12 +51,13 @@ void GLManager::init()
 		exit(EXIT_FAILURE);
 	}
 	
+	//set up window
 	win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simplest", NULL, NULL);
 	aspect_ratio = WINDOW_WIDTH / WINDOW_HEIGHT;
 	glfwMakeContextCurrent(win);
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	
-
+	//make sure glew is initialised
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -64,6 +65,7 @@ void GLManager::init()
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 	}
 
+	//register all event callbacks
 	events.set_error_callback(error_callback);
 	events.set_reshape_callback(win, resize_callback);
 	events.set_key_callback(win, key_callback);
@@ -104,11 +106,6 @@ void GLManager::init()
 		if (terrain_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
-		snowflake = SOIL_load_OGL_texture("..\\textures\\snowflake.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-
-		if (snowflake == 0)
-			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
-
 		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
 		if (loc >= 0) glUniform1i(loc, 0);
 	}
@@ -127,29 +124,21 @@ void GLManager::init()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	terrain_res = glm::vec2(200, 200);
-	terrain_size = glm::vec2(200, 200);
-	terr_frequency = 8;
-	terr_scale = 8;
-	terr_octaves = 8;
-
 	init_objects();
 }
 
 ///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
-	//test.init(lightsource_shader);
-	snow.set_shader(&particle_shader);
-	snow.set_texture(snowflake);
-	snow.create_particles(terrain_size.x+20, terrain_size.y+20,3,8,30);
-
+	//initialise the sphere position
 	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000,1000, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
 	sphere->normals_enabled = false;
 
+	//initialise shaders
 	basic_shader.set_shininess(8.f);
 
+	//initialise lightsource
 	/*sun = Lightsource(lightsource_shader);
 	sun.set_scale(glm::vec3( .3f, .3f, .3f));*/
 
@@ -190,36 +179,33 @@ void GLManager::update(float delta_time)
 	particle_shader.set_projection_matrix(projection);
 	unlit_texture_shader.set_projection_matrix(projection);
 	normals_shader.set_projection_matrix(projection);
-
-	snow.set_view_matrix(camera.get_view_matrix());
 	
+	//update sphere view matrix and position
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(draw_normals);
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 	sphere->rotate(glm::radians(cursor_movement.x),glm::vec3(0,1,0));
 	sphere->rotate(glm::radians(-cursor_movement.y), glm::vec3(1, 0, 0));
 
-	
-
-	//manipulate and draw other objects
+	//update camera position
 	glm::vec3 campos = camera.get_position();
 	campos.y += 2;
-	//sun.move_to(glm::vec4(campos,1));
-	snow.translate(glm::vec3(-(terrain_size.x / 2)-10, -5, (-terrain_size.y / 2)-10));
 
-	//set the light position in lit shader
+	//update the lightsource position
+	//sun.move_to(glm::vec4(campos,1));
+
+	//set the light position in shader
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
+
 
 	//apply scene changes if specific flags were set
 	if (reset)
 		reset_scene();
-
 	basic_shader.set_attenuation_enabled(attenuation_enabled);
 	basic_shader.set_texture_enabled(texture_enabled);
 	basic_shader.set_colour_enabled(colour_enabled);
 	basic_shader.set_lighting_enabled(light_enabled);
 
-	snow.update_particles(delta_time);
 }
 
 void GLManager::render()
@@ -227,7 +213,6 @@ void GLManager::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//sun.draw();
 	sphere->drawSphere(sphere_mode);
-	snow.draw_particles();
 }
 
 void GLManager::terminate()
@@ -308,7 +293,7 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 			draw_normals = !draw_normals;
 			std::cout << "normals_enabled=" << draw_normals << std::endl;
 		}
-
+		//scroll through draw modes
 		if (key_code == GLFW_KEY_M)
 			sphere_mode = (sphere_mode < 2) ? ++sphere_mode:0;
 			
@@ -323,7 +308,7 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 	}
 	else if(action == GLFW_RELEASE)
 	{
-		//reset speeds on key releases
+		//reset variables
 		if (key_code == GLFW_KEY_W || key_code == GLFW_KEY_S)
 			camera.set_z_mov(0);
 		if (key_code == GLFW_KEY_A || key_code == GLFW_KEY_D)

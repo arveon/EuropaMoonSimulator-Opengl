@@ -1,4 +1,7 @@
 /* by Aleksejs Loginovs - October 2018 */
+/*
+Class represents the camera and provides methods for manipulating it
+*/
 #pragma once
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>

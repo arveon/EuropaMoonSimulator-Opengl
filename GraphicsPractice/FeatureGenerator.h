@@ -1,4 +1,9 @@
 /* by Aleksejs Loginovs - November 2018 */
+/*
+Class used to generate specific features on a flat dem to be applied to terrains later
+Contains method versions for features to be applied to flat dem and for features to be applied to a sphere
+
+*/
 #pragma once
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>

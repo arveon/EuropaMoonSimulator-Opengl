@@ -4,8 +4,6 @@
 
 #include "ParticleSystem.h"
 
-
-
 void ParticleSystem::create_particles(int max_x, int max_z, int min_velocity, int max_velocity, int start_height)
 {
 	this->max_x = max_x;
@@ -25,7 +23,6 @@ void ParticleSystem::create_particles(int max_x, int max_z, int min_velocity, in
 		particles.push_back(part);
 	}
 
-
 	//create a VBO to store all particle positions
 	glGenBuffers(1, &particle_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, particle_vbo);
@@ -33,6 +30,9 @@ void ParticleSystem::create_particles(int max_x, int max_z, int min_velocity, in
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+/*
+Function used to draw all particles
+*/
 void ParticleSystem::draw_particles()
 {
 	glUseProgram(shader->get_program_id());
@@ -52,6 +52,9 @@ void ParticleSystem::draw_particles()
 	
 }
 
+/*
+Function updates particles positions, removes dead particles and adds new particles if more needed
+*/
 void ParticleSystem::update_particles(float dt)
 {
 	shader->set_model_view_matrix(view_matrix*model_matrix);
@@ -78,6 +81,10 @@ void ParticleSystem::update_particles(float dt)
 	this->model_matrix = glm::mat4(1.0f);
 }
 
+/*
+Function used to generate a single particle with position and velocity in a certain direction
+!!!CHANGE VELOCITY (go towards centre) AND LIFESPAN TO ADAPT TO SPHERE!!!
+*/
 Particle ParticleSystem::generate_particle()
 {
 	//generate vertex

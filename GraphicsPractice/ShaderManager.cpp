@@ -2,7 +2,9 @@
 
 #include "ShaderManager.h"
 
-
+/*
+Function used to run through the whole process of loading a set of shaders for a pipeline
+*/
 Shader ShaderManager::load_shader(const char* vertex_shader_path, const char* fragment_shader_path, const char* geometry_shader_path)
 {
 	GLuint v_shader, f_shader, g_shader;
@@ -43,6 +45,9 @@ Shader ShaderManager::load_shader(const char* vertex_shader_path, const char* fr
 	return Shader(program);
 }
 
+/*
+Function used to build a shader
+*/
 GLuint ShaderManager::build_shader(GLenum shaderType, const std::string & shaderText)
 {
 	GLuint shader = glCreateShader(shaderType);
@@ -82,6 +87,9 @@ GLuint ShaderManager::build_shader(GLenum shaderType, const std::string & shader
 	return shader;
 }
 
+/*
+Function used to read file into a string
+*/
 std::string ShaderManager::read_file(const char * file_path)
 {
 	std::string content;

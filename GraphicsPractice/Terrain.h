@@ -1,4 +1,10 @@
 /* by Aleksejs Loginovs - November 2018 */
+
+/*
+	This class represents a flat piece of terrain as a drawable object
+	
+	!!!NOT USED IN THE FINAL PROJECT!!!
+*/
 #pragma once
 #include "Drawable.h"
 class Terrain :

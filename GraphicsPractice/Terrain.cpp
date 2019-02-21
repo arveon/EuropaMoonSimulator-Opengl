@@ -1,5 +1,5 @@
 /*	by Aleksejs Loginovs - November 2018
-	represents terrain drawable
+	represents flat terrain drawable object
 */
 
 #include "Terrain.h"

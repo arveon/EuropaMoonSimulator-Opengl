@@ -1,5 +1,8 @@
 /* by Aleksejs Loginovs - October 2018 */
-
+/*
+Class contains all of the constant values that should stay unchanged
+Most of these were used at different stages of prototyping and aren't used anymore
+*/
 #pragma warning( disable: 4244 )
 
 

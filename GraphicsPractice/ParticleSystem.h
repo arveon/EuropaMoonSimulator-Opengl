@@ -1,4 +1,9 @@
 /* by Aleksejs Loginovs - November 2018 */
+
+/*
+Class responsible for managing snow particles
+!!!NOT USED IN THE FINAL VERSION, NEEDS WORK TO ADAPT TO SPHERE!!!
+*/
 #pragma once
 #include <vector>
 #include <glm\common.hpp>

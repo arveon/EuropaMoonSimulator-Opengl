@@ -1,3 +1,4 @@
+/* Class stores user choices in planet generator configuration */
 #pragma once
 #include <string>
 

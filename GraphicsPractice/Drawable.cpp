@@ -19,8 +19,6 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 	this->num_indices = num_indices;
 	this->indices = indices;
 
-	
-
 	if (tex_id != NULL && texcoords)
 	{
 		tex_enabled = true;

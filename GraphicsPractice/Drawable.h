@@ -1,5 +1,8 @@
 /* by Aleksejs Loginovs - October 2018 */
 
+/*
+Class represents a base for any object that can be drawn
+*/
 #pragma once
 #include <vector>
 #include <glm/common.hpp>
