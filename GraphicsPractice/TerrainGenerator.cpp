@@ -245,6 +245,8 @@ Function used to generate a sphere with terrain on it
 */
 Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, int numlongs, GLuint tex)
 {
+	int ridge_density = 10;
+
 	//generate the sphere
 	Sphere* sphere = new Sphere(shader, tex);
 	sphere->makeSphere(numlats, numlongs);
@@ -259,41 +261,145 @@ Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, i
 
 	//generate the features that will be replicated across the surface
 	glm::vec2 resolution(1000, 1000);
-	std::vector<glm::vec3> ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.35f);
-	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.01f, .99f, 0.25f);
-	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.95f, .5f);
-	
+	std::vector<glm::vec3> big_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.015f, .97f, 0.45f);
+	std::vector<glm::vec3> medium_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.011f, .98f, 0.45f);
+	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.007f, .99f, 0.35f);
+	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.99f, .5f);
+	std::vector<glm::vec3> dome = FeatureGenerator::generate_crater(resolution, 1.01f , .5f);
 
 	//replicate the features across surface
 	int maxid = 0;
 	glm::vec2 scale, shift;//x-sideways y-updown
-	//Apply craters
-	scale.x = .05f;
-	scale.y = .1f;
-	shift = glm::vec2(0, 200);
-	apply_terrain_feature_sphere(crater, scale, shift, sphere, resolution, visited);
+	float angle;
 
-	//Apply ridges
-	shift = glm::vec2(100, 300);
-	scale.x = .005f;
-	scale.y = .1f;
-	//groups of small ridges
-	for (int i = 0; i < 5; i++)
+	/* Apply small craters */
+	for (int i = 0; i < 20; i++)
 	{
-		apply_terrain_feature_sphere(tiny_ridge, scale, shift, sphere, resolution,visited);
-		shift.x += 5;
+		scale.x = (float)(rand()% 3 + 4) / 1000;
+		scale.y = scale.x * 2;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % (int)((numlats / 5) * 3) + (int)(numlats / 5);
+		apply_terrain_feature_sphere(crater, scale, shift, sphere, resolution, visited);
+		std::cout << "small craters: " << i + 1 << std::endl;
 	}
 
-	//bigger ridges
-	float angle = 30;
-	scale.x = 0.015f;
-	shift.x -= 5;
-	for (int i = 0; i < 5; i++)
+	/* Apply domes */
+	for (int i = 0; i < 20; i++)
 	{
-		apply_terrain_feature_sphere(ridge, scale, shift, sphere, resolution,visited, angle);
-		shift.x -= 20;
+		scale.x = (float)(rand() % 9 + 4) / 1000;
+		scale.y = scale.x * 2;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % (int)((numlats / 5) * 3) + (int)(numlats / 5);
+		apply_terrain_feature_sphere(dome, scale, shift, sphere, resolution, visited);
+		std::cout << "domes: " << i + 1 << std::endl;
 	}
+
+	/* Apply large craters */
+	for (int i = 0; i < 6; i++)
+	{
+		scale.x = (float)(rand() % 6 + 8) / 1000;
+		scale.y = scale.x * 2;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % (int)((numlats / 5) * 3) + (int)(numlats / 5);
+		apply_terrain_feature_sphere(crater, scale, shift, sphere, resolution, visited);
+		std::cout << "small craters: " << i + 1 << std::endl;
+	}
+
 	
+	/* Apply ridges */
+	//large ridges
+	for (int i = 0; i < ridge_density/3; i++)
+	{
+		//scale.x = 0.018f;
+		scale.x = (float)(rand() % 5 + 18) / 1000;
+		scale.y = (float)(rand() % 7 + 25) / 100;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % (int)(numlats/3) + (int)(numlats/3);
+		angle = rand() % 180;
+		apply_terrain_feature_sphere(big_ridge, scale, shift, sphere, resolution, visited, angle);
+		std::cout << "large ridges group: " << i << std::endl;
+	}
+
+	//medium ridges
+	scale.x = 0.015f;
+	scale.y = 0.2;
+	shift.x -= 5;
+	for (int i = 0; i < ridge_density; i++)
+	{
+		scale.x = (float)(rand() % 6 + 13) / 1000;
+		scale.y = (float)(rand() % 8 + 18) / 100;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % numlats;
+		angle = rand() % 180;
+		int group = rand() % 5 + 4;
+
+		float move = scale.x * (int)resolution.x/2;
+		glm::vec2 intershift;
+		intershift.x = move * glm::sin(glm::radians(angle));
+		intershift.y = move * glm::cos(glm::radians(angle));
+		for (int j = group; j > 0; j--)
+		{
+			apply_terrain_feature_sphere(medium_ridge, scale, shift, sphere, resolution, visited, angle);
+			shift += intershift;
+		}
+		std::cout << "medium ridges group: " << i << std::endl;
+	}
+
+	//small ridges
+	/*scale.x = .01f;
+	scale.y = .1f;*/
+	for (int i = 0; i < ridge_density; i++)
+	{
+		scale.x = (float)(rand() % 4 + 9) / 1000;
+		scale.y = (float)(rand() % 4 + 10) / 100;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % numlats;
+		angle = rand() % 180;
+		int group = rand() % 5 + 7;
+
+		float move = scale.x * (int)resolution.x / 2;
+		glm::vec2 intershift;
+		intershift.x = move * glm::sin(glm::radians(angle));
+		intershift.y = move * glm::cos(glm::radians(angle));
+
+		//group of small ridges
+		for (int j = 0; j < group; j++)
+		{
+			apply_terrain_feature_sphere(tiny_ridge, scale, shift, sphere, resolution, visited, angle);
+			shift += intershift;
+		}
+		std::cout << "small ridges group: " << i << std::endl;
+	}
+
+	//singular tiny ridges
+	scale.x = .005f;
+	scale.y = .05f;
+	for (int i = 0; i < ridge_density*10; i++)
+	{
+		scale.x = (float)(rand() % 4 + 9) / 1000;
+		scale.y = (float)(rand() % 6 + 4) / 100;
+		shift.x = rand() % numlongs;
+		shift.y = rand() % numlats;
+		angle = rand() % 180;
+		int group = rand() % 4;
+
+		float move = scale.x * (int)resolution.x / 2;
+		glm::vec2 intershift;
+		intershift.x = move * glm::sin(glm::radians(angle));
+		intershift.y = move * glm::cos(glm::radians(angle));
+
+		//group of small ridges
+		for (int j = 0; j < group; j++)
+		{
+			apply_terrain_feature_sphere(tiny_ridge, scale, shift, sphere, resolution, visited, angle);
+			shift += intershift;
+		}
+		std::cout << "small ridge: " << i << std::endl;
+	}
+	std::cout << "generation finished" << std::endl;
+
+	delete visited;
+
 	//calculate normals and apply all the changes by reloading it in the memory
 	glm::vec3* temp = sphere->normals;
 	calculate_normals_sphere(temp, &std::vector<GLuint>(sphere->indices, sphere->indices+sphere->num_indices), sphere->verts, glm::vec2(sphere->numlongs, sphere->numlats));
@@ -347,17 +453,19 @@ void TerrainGenerator::apply_terrain_feature_sphere(std::vector<glm::vec3> featu
 		int id = std::round(std::floor(vert_on_sphere.y) * (sphere->numlongs+1) + std::floor(vert_on_sphere.x)) + 1;
 
 		//make sure vert wasn't visited before
-		if (visited[id] == 1)
-			continue;
+		if (visited != nullptr)
+		{
+			if (visited[id] == 1)
+				continue;
+			//set flag that vert was visited
+			visited[id] = 1;
+		}
 
 		//actually apply the transformation
 		glm::vec3 to_center(sphere->verts[id]);
 		float cur_length = glm::length(to_center);
 		float target_length = cur_length * vert.y;
 		sphere->verts[id] = { target_length * to_center.x, target_length * to_center.y, target_length * to_center.z };
-
-		//set flag that vert was visited
-		visited[id] = 1;
 	}	
 
 	//join last vertex in each line to 0th vertex of line so there is never a gap
