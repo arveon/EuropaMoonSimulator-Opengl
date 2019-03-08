@@ -37,22 +37,22 @@ Drawable::~Drawable()
 //loads all vertex data into GPU memory
 void Drawable::load_into_memory()
 {
-	glGenBuffers(1, &vertex_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glGenBuffers(1, &vertBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, verts, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//load indices into memory
-	glGenBuffers(1, &index_buffer_id);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
+	glGenBuffers(1, &elementBufferObject);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*num_indices, indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//load vertex colours into memory
 	if (colours_enabled)
 	{
-		glGenBuffers(1, &colour_buffer_id);
-		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
+		glGenBuffers(1, &coloursBufferObject);
+		glBindBuffer(GL_ARRAY_BUFFER, coloursBufferObject);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * num_verts, colours, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -60,8 +60,8 @@ void Drawable::load_into_memory()
 	//load vertex normals into memory
 	if (normals_enabled)
 	{
-		glGenBuffers(1, &normal_buffer_id);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_id);
+		glGenBuffers(1, &normalsBufferObject);
+		glBindBuffer(GL_ARRAY_BUFFER, normalsBufferObject);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * num_verts, normals, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -69,8 +69,8 @@ void Drawable::load_into_memory()
 	//load vertex texture coords into memory
 	if (tex_enabled)
 	{
-		glGenBuffers(1, &tex_coords_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
+		glGenBuffers(1, &texcoordsBufferObject);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsBufferObject);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * num_verts, texture_coords, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -78,27 +78,27 @@ void Drawable::load_into_memory()
 
 void Drawable::draw_object(int mode, GLuint winding)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, vertBufferObject);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	if (colours_enabled)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, colour_buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, coloursBufferObject);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
 	if (normals_enabled)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, normalsBufferObject);
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, VALUES_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
 	if (tex_enabled)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsBufferObject);
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -110,7 +110,7 @@ void Drawable::draw_object(int mode, GLuint winding)
 	glFrontFace(winding);
 	glPointSize(5.f);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 	
 	if (mode == DRAW_TRIANGLE_STRIP_MODE)
 	{

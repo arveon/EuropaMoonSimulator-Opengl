@@ -17,10 +17,10 @@ You might also want to add colours and texture coordinates */
 Sphere::Sphere(Shader shader, GLuint textureID)
 {
 	this->shader_program = shader;
-	attribute_v_coord = 0;
-	attribute_v_colours = 1;
-	attribute_v_normal = 2;
-	attribute_v_tex_coord = 3;
+	vertex_buffer_id = 0;
+	colour_buffer_id = 1;
+	normal_buffer_id = 2;
+	tex_coords_id = 3;
 	num_verts = 0;		// We set this when we know the numlats and numlongs values in makeSphere
 	this->drawmode = 0;
 	
@@ -31,16 +31,27 @@ Sphere::Sphere(Shader shader, GLuint textureID)
 	}
 	else
 		tex_enabled = false;
+
+	this->model_matrix = glm::mat4(1.f);
+
+	glGenBuffers(1, &vertBufferObject);
+	glGenBuffers(1, &normalsBufferObject);
+	glGenBuffers(1, &coloursBufferObject);
+	glGenBuffers(1, &texcoordsBufferObject);
 }
 
 Sphere::Sphere()
 {
-	attribute_v_coord = 0;
-	attribute_v_colours = 1;
-	attribute_v_normal = 2;
-	attribute_v_tex_coord = 3;
+	vertex_buffer_id = 0;
+	colour_buffer_id = 1;
+	normal_buffer_id = 2;
+	tex_coords_id = 3;
 	num_verts = 0;		// We set this when we know the numlats and numlongs values in makeSphere
 	this->drawmode = 0;
+
+	this->model_matrix = glm::mat4(1.f);
+
+	
 }
 
 Sphere::~Sphere()
@@ -54,18 +65,18 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 {
 	GLuint i;
 	/* Calculate the number of vertices required in sphere */
-	num_verts = 2 + ((numlats - 2) * (numlongs+1));
+	this->num_verts = 2 + ((numlats - 2) * (numlongs+1));
 	this->numlats = numlats;
 	this->numlongs = numlongs;
 
 	// Create the arrays to create the sphere vertex attributes
 	verts = new glm::vec3[num_verts];
-	pTexCoords = new GLfloat[num_verts * 2];
+	texture_coords = new glm::vec2[num_verts];
 	GLfloat* pColours = new GLfloat[num_verts * 4];
-	makeUnitSphere(verts, pTexCoords);
+	makeUnitSphere(verts, texture_coords);
 
 	/* Define colours as the x,y,z components of the sphere vertices */
-	for (i = 0; i < num_verts; i++)
+	for (int i = 0; i < num_verts; i++)
 	{
 		pColours[i * 4] = verts[i].x;
 		pColours[i * 4 + 1] = verts[i].y;
@@ -73,27 +84,27 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 		pColours[i * 4 + 3] = 1.f;
 	}
 
+	gen_buffers();
+
 	/* Generate the vertex buffer object */
-	glGenBuffers(1, &sphereBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)* num_verts, verts, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	normals = new glm::vec3[num_verts];
-	for (GLuint i = 0; i < num_verts; i++)
+	for (int i = 0; i < num_verts; i++)
 	{
 		normals[i] = glm::normalize(verts[i]);
 	}
 	/* Store the normals in a buffer object */
-	glGenBuffers(1, &sphereNormals);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)* num_verts, normals, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 	/* Store the colours in a buffer object */
-	glGenBuffers(1, &sphereColours);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereColours);
+	glGenBuffers(1, &coloursBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, coloursBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* num_verts * 4, pColours, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -101,92 +112,102 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 	/* Create the texture coordinate  buffer for the cube */
 	if (tex_enabled)
 	{
-		glGenBuffers(1, &tex_coords_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* num_verts * 2, pTexCoords, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsBufferObject);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* num_verts, texture_coords, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	produce_indices();
+
+	delete pColours;
+}
+
+void Sphere::gen_buffers()
+{
+	glGenBuffers(1, &vertBufferObject);
+	glGenBuffers(1, &normalsBufferObject);
+	glGenBuffers(1, &texcoordsBufferObject);
+}
+
+
+void Sphere::produce_indices()
+{
 	/* Calculate the number of indices in our index array and allocate memory for it */
-	num_indices = (numlongs+2)*2/*poles*/ + 2*(numlongs+1)+2*(numlats-4)*(numlongs+1);
+	num_indices = (numlongs + 2) * 2/*poles*/ + 2 * (numlongs + 1) + 2 * (numlats - 4)*(numlongs + 1);
 	indices = new GLuint[num_indices];
 
 	// fill "indices" to define triangle strips
 	GLuint index = 0;		// Current index
 
 	// Define indices for the first triangle fan for south pole
-	for (int i = 0; i <= numlongs+1; i++)
+	for (int i = 0; i <= numlongs + 1; i++)
 	{
 		indices[index++] = i;
 	}
 
 	// Define latitude indices
-	for (i = 0; i < numlats - 3; i++)//correct
+	for (int i = 0; i < numlats - 3; i++)//correct
 	{
-		int row_start = i * (numlongs+1) + 1;
-		for (int j = 0; j < numlongs+1; j++)
+		int row_start = i * (numlongs + 1) + 1;
+		for (int j = 0; j < numlongs + 1; j++)
 		{
 			indices[index++] = row_start + j;
-			indices[index++] = row_start + j + (numlongs+1);
+			indices[index++] = row_start + j + (numlongs + 1);
 		}
 		//indices[index++] = row_start;
 		//indices[index++] = row_start + numlongs;
 	}
 
 	// Define indices for the last triangle fan for the north pole region
-	for (i = num_verts - 1; i >= (num_verts - (numlongs+2)); i--)
+	for (int i = num_verts - 1; i >= (num_verts - (numlongs + 2)); i--)
 	{//start from final vert (center of triangle fan for last pole) and add indexes for lower
 		indices[index++] = i;
 	}
 	////indices[index++] = num_verts - 2;
-	//for (int i = 0; i < num_indices; i++)
-	//	std::cout << "i: " << i << " " << indices[i] << std::endl;
+	/*for (int i = 0; i < num_indices; i++)
+		std::cout << "i: " << i << " " << indices[i] << std::endl;*/
+	std::cout << "num indices: " << index << std::endl;
 
 	// Generate a buffer for the indices
-	glGenBuffers(1, &elementbuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+	glGenBuffers(1, &elementBufferObject);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(GLuint), indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	delete pColours;
-
-	//need to finish the draw function, vertices seem to be generating correctly
-	//indices seem to be fine as well (numbers of verts and indices look fine)
-	//problem scaling resolution up? something to do with corrupted heap
-	//WRITES MORE VERTS THAN SHOULD (overflows vertex array)
 }
-
 
 void Sphere::draw(int drawmode)
 {
 	/* Bind vertex buffer */
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
-	glVertexAttribPointer(attribute_v_coord, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(attribute_v_coord);
+	glBindBuffer(GL_ARRAY_BUFFER, vertBufferObject);
+	glVertexAttribPointer(vertex_buffer_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(vertex_buffer_id);
 
 	/* Bind the sphere normals */
-	glEnableVertexAttribArray(attribute_v_normal);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
-	glVertexAttribPointer(attribute_v_normal, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsBufferObject);
+	glEnableVertexAttribArray(normal_buffer_id);
+	glVertexAttribPointer(normal_buffer_id, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	/* Bind the sphere colours */
-	glBindBuffer(GL_ARRAY_BUFFER, sphereColours);
-	glVertexAttribPointer(attribute_v_colours, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(attribute_v_colours);
+	if (colours_enabled)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, coloursBufferObject);
+		glVertexAttribPointer(colour_buffer_id, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(colour_buffer_id);
+	}
 
 	/* Bind the sphere texture coordinates */
 	if (tex_enabled)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
-		glVertexAttribPointer(attribute_v_tex_coord, 2, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(attribute_v_tex_coord);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsBufferObject);
+		glVertexAttribPointer(tex_coords_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(tex_coords_id);
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 	}
 
 	// Define triangle winding as counter-clockwise
 	glFrontFace(GL_CCW);
 
-	glPointSize(3.f);
+	glPointSize(4.f);
 
 	//fill/not fill polygons
 	if (drawmode == 1)
@@ -201,7 +222,7 @@ void Sphere::draw(int drawmode)
 	else
 	{
 		/* Bind the indexed vertex buffer */
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
 		/* Draw the south pole regions as a triangle  */
 		glDrawElements(GL_TRIANGLE_FAN, numlongs + 2, GL_UNSIGNED_INT, (GLvoid*)(0));
@@ -213,7 +234,7 @@ void Sphere::draw(int drawmode)
 		GLuint lat_offset_current = lat_offset_start * 4;
 
 		/* Draw the triangle strips of latitudes */
-		for (GLuint i = 0; i < numlats - 3; i++)
+		for (int i = 0; i < numlats - 3; i++)
 		{
 			glDrawElements(GL_TRIANGLE_STRIP, (numlongs+1) * 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
 			lat_offset_current += (lat_offset_jump * 4);
@@ -236,15 +257,15 @@ void Sphere::draw(int drawmode)
 /* Define the vertex positions for a sphere. The array of vertices must have previosuly
 been created.
 */
-void Sphere::makeUnitSphere(glm::vec3* verts, GLfloat* texcoords)
+void Sphere::makeUnitSphere(glm::vec3* verts, glm::vec2* texcoords)
 {
 
 	//IF RESOLUTION < 20, for some reason writes more latitudes than required
 	//make south pole
 	verts[0] = { 0.f, -1.f , 0.f };
 
-	texcoords[0] = 0.5f;
-	texcoords[1] = 0;
+	texcoords[0].x = 0.5f;
+	texcoords[0].y = 0;
 
 	//make latitude lines
 	GLfloat latstep = 180.f / ((float)numlats-1);
@@ -270,23 +291,23 @@ void Sphere::makeUnitSphere(glm::vec3* verts, GLfloat* texcoords)
 			verts[cur_vert] = { glm::cos(lon_r) * glm::cos(lat_r), glm::sin(lat_r), glm::sin(lon_r) * glm::cos(lat_r)};
 			//Define the texture coordinates as normalised lat/long values
 			float u = (lon + 180.f) / 360.f;	
-			texcoords[cur_vert * 2] = u;
-			texcoords[cur_vert * 2 + 1] = v;
+			texcoords[cur_vert].x = u;
+			texcoords[cur_vert].y = v;
 
 			cur_vert++;
 		}
 
 		verts[cur_vert] = verts[row_start_vert];
-		texcoords[cur_vert * 2] = 1.0f;
-		texcoords[cur_vert * 2+1] = v;
+		texcoords[cur_vert].x = 1.0f;
+		texcoords[cur_vert].y = v;
 		cur_vert++;
 
 	}
  	//north pole
 	verts[cur_vert] = { 0.f, 1.f, 0.f };
 
-	texcoords[cur_vert * 2] = 0.5f;
-	texcoords[cur_vert * 2 + 1] = 1.f;
+	texcoords[cur_vert].x = 0.5f;
+	texcoords[cur_vert].y = 1.0f;
 
 	std::cout << "vertices generated for sphere: " << cur_vert << " of " << num_verts << std::endl;
 }
@@ -294,22 +315,24 @@ void Sphere::makeUnitSphere(glm::vec3* verts, GLfloat* texcoords)
 void Sphere::reload_in_memory()
 {
 	/* Generate the vertex buffer object */
-	glGenBuffers(1, &sphereBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)* num_verts, verts, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Store the normals in a buffer object */
-	glGenBuffers(1, &sphereNormals);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)* num_verts, normals, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/* Store the texcoords in a buffer object */
+	glBindBuffer(GL_ARRAY_BUFFER, texcoordsBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)* num_verts, texture_coords, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 /* Draws the sphere form the previously defined vertex and index buffers */
 void Sphere::drawSphere(int drawmode)
 {
-
 	shader_program.set_model_view_matrix(view_matrix*model_matrix);
 	normals_shader.set_model_view_matrix(view_matrix*model_matrix);
 

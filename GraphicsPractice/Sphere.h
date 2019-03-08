@@ -18,37 +18,36 @@ class Sphere : public Drawable
 {
 private:
 	friend class TerrainGenerator;
+	friend class ObjectLoader;
 public:
 	Sphere(Shader shader, GLuint textureID = NULL);
 	Sphere();
 	~Sphere();
 
+	
+
 	void makeSphere(GLuint numlats, GLuint numlongs);
 	void drawSphere(int drawmode);
 
-	// Define vertex buffer object names (e.g as globals)
-	GLuint sphereBufferObject;
-	GLuint sphereNormals;
-	GLuint sphereColours;
-	GLuint elementbuffer;
-
-	GLfloat* pTexCoords;
-
-	GLuint attribute_v_coord;
-	GLuint attribute_v_normal;
-	GLuint attribute_v_colours;
-	GLuint attribute_v_tex_coord;
-
-	int numspherevertices;
+	//int numspherevertices;
 	unsigned int numlats;
 	unsigned int numlongs;
 	int drawmode;
 	void set_shader(Shader shader) { this->shader_program = shader; }
 	void set_texture(GLuint texture) { Drawable::texture_id = texture; }
+
+	void produce_indices();
+	void reload_in_memory();
 private:
 	void draw(int drawmode);
-	void makeUnitSphere(glm::vec3 *pVertices, GLfloat* pTexCoords);
-	void reload_in_memory();
+	void makeUnitSphere(glm::vec3 *pVertices, glm::vec2* pTexCoords);
+	
+
+	void set_normals(glm::vec3* normals) { this->normals = normals; }
+	void set_verts(glm::vec3* verts) { this->verts = verts; }
+	void set_texcoords(glm::vec2* texcoords) { this->texture_coords = texcoords; }
+
+	void gen_buffers();
 };
 
 

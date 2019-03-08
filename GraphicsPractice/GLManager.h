@@ -40,6 +40,9 @@ Is responsible for loading resources and initialising objects
 
 #include "Camera.h"
 
+#include "Assistant.h"
+#include "UserPrefs.h"
+
 class GLManager
 {
 private:
@@ -65,6 +68,7 @@ private:
 	TerrainGenerator terrain_gen;
 
 	//control variables
+	bool model_exported;
 	static glm::vec3 cursor_movement;
 	static Camera camera;
 	static GLfloat aspect_ratio;
@@ -82,6 +86,7 @@ private:
 	static bool colour_enabled;
 	static bool draw_normals;
 	static bool close;
+	static bool exporting;
 	
 	static int speed;
 	
@@ -106,6 +111,7 @@ public:
 	static void cursor_moved_callback(GLFWwindow* window, double xpos, double ypos);
 	static void print_controls();
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 	void init_objects();
 };
 

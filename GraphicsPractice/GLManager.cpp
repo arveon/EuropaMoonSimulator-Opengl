@@ -19,6 +19,7 @@ bool GLManager::texture_enabled = true;
 bool GLManager::light_enabled = true;
 bool GLManager::colour_enabled = false;
 bool GLManager::draw_normals = false;
+bool GLManager::exporting = false;
 int GLManager::sphere_mode = 0;
 
 glm::vec3 GLManager::cursor_movement;
@@ -50,13 +51,13 @@ void GLManager::init()
 		std::cout << "Failed to init GLFW." << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	
+
 	//set up window
 	win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Simplest", NULL, NULL);
 	aspect_ratio = WINDOW_WIDTH / WINDOW_HEIGHT;
 	glfwMakeContextCurrent(win);
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	
+
 	//make sure glew is initialised
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -79,13 +80,13 @@ void GLManager::init()
 		basic_shader.init_shader(aspect_ratio, LIT_TEXTURED_SHADER);
 		basic_shader.set_shininess(1);
 
-		lightsource_shader = ShaderManager::load_shader( "../shaders/lightsource.vert","../shaders/lightsource.frag");
+		lightsource_shader = ShaderManager::load_shader("../shaders/lightsource.vert", "../shaders/lightsource.frag");
 		lightsource_shader.init_shader(aspect_ratio, BASIC_SHADER);
 
 		unlit_texture_shader = ShaderManager::load_shader("../shaders/unlit_textured.vert", "../shaders/unlit_textured.frag");
 		unlit_texture_shader.init_shader(aspect_ratio, BASIC_SHADER);
 
-		normals_shader = ShaderManager::load_shader("../shaders/normals.vert","../shaders/normals.frag","../shaders/normals.geom");
+		normals_shader = ShaderManager::load_shader("../shaders/normals.vert", "../shaders/normals.frag", "../shaders/normals.geom");
 		normals_shader.init_shader(aspect_ratio, BASIC_SHADER);
 
 		particle_shader = ShaderManager::load_shader("../shaders/particle.vert", "../shaders/particle.frag", "../shaders/particle.geom");
@@ -130,8 +131,23 @@ void GLManager::init()
 ///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
+	UserPrefs prefs = Assistant::engage();
+
+	if (prefs.import)
+	{
+		sphere = ObjectLoader::load_object_sphere(prefs.src_file, basic_shader);
+		sphere->set_shader(basic_shader);
+		sphere->set_texture(terrain_tex);
+		sphere->reload_in_memory();
+		model_exported = true;
+	}
+	else if (!prefs.import)
+	{
+		sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000, 1000, prefs, terrain_tex);
+		model_exported = false;
+	}
+
 	//initialise the sphere position
-	sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000,1000, terrain_tex);
 	sphere->set_normal_shader(normals_shader);
 	sphere->normals_enabled = false;
 
@@ -141,6 +157,7 @@ void GLManager::init_objects()
 	//initialise lightsource
 	/*sun = Lightsource(lightsource_shader);
 	sun.set_scale(glm::vec3( .3f, .3f, .3f));*/
+
 
 	GLManager::print_controls();
 }
@@ -161,7 +178,7 @@ void GLManager::loop()
 		glfwSwapBuffers(win);
 		glfwPollEvents();
 
-		if(close == true)
+		if (close == true)
 			glfwSetWindowShouldClose(GLManager::win, GL_TRUE);
 	}
 }
@@ -179,12 +196,12 @@ void GLManager::update(float delta_time)
 	particle_shader.set_projection_matrix(projection);
 	unlit_texture_shader.set_projection_matrix(projection);
 	normals_shader.set_projection_matrix(projection);
-	
+
 	//update sphere view matrix and position
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(draw_normals);
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
-	sphere->rotate(glm::radians(cursor_movement.x),glm::vec3(0,1,0));
+	sphere->rotate(glm::radians(cursor_movement.x), glm::vec3(0, 1, 0));
 	sphere->rotate(glm::radians(-cursor_movement.y), glm::vec3(1, 0, 0));
 
 	//update camera position
@@ -205,6 +222,14 @@ void GLManager::update(float delta_time)
 	basic_shader.set_texture_enabled(texture_enabled);
 	basic_shader.set_colour_enabled(colour_enabled);
 	basic_shader.set_lighting_enabled(light_enabled);
+
+	if (exporting && !model_exported)
+	{
+		ObjectLoader::write_sphere(*sphere);
+		exporting = false;
+	}
+	else if (exporting && model_exported)
+		std::cout << "Model already exported" << std::endl;
 
 }
 
@@ -295,8 +320,8 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		}
 		//scroll through draw modes
 		if (key_code == GLFW_KEY_M)
-			sphere_mode = (sphere_mode < 2) ? ++sphere_mode:0;
-			
+			sphere_mode = (sphere_mode < 2) ? ++sphere_mode : 0;
+
 
 		//toggle attenuation
 		if (key_code == GLFW_KEY_X)
@@ -304,9 +329,13 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 
 		//toggle texture
 		if (key_code == GLFW_KEY_T)
-			texture_enabled = !texture_enabled;		
+			texture_enabled = !texture_enabled;
+
+		//export model
+		if (key_code == GLFW_KEY_E)
+			exporting = true;
 	}
-	else if(action == GLFW_RELEASE)
+	else if (action == GLFW_RELEASE)
 	{
 		//reset variables
 		if (key_code == GLFW_KEY_W || key_code == GLFW_KEY_S)
@@ -331,7 +360,7 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 
 void GLManager::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	cursor_movement.z += yoffset/2;
+	cursor_movement.z += yoffset / 2;
 }
 
 void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double ypos)
@@ -352,14 +381,14 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 		temp_delta.x = (floor(xpos) - prev_xpos);
 		temp_delta.y = (floor(ypos) - prev_ypos);
 
-		cursor_movement.x += temp_delta.x/4;
-		cursor_movement.y += temp_delta.y/4;
+		cursor_movement.x += temp_delta.x / 4;
+		cursor_movement.y += temp_delta.y / 4;
 
 
 		if (cursor_movement.x >= 360)
 			cursor_movement.x = (int)cursor_movement.x % 360;
 		else if (cursor_movement.x < 0)
-			cursor_movement.x = 360 - (int)cursor_movement.x%360;
+			cursor_movement.x = 360 - (int)cursor_movement.x % 360;
 
 		if (cursor_movement.y >= 360)
 			cursor_movement.y = (int)cursor_movement.y % 360;
@@ -368,7 +397,7 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 	}
 	prev_xpos = floor(xpos);
 	prev_ypos = floor(ypos);
-	
+
 }
 
 void GLManager::print_controls()

@@ -17,9 +17,14 @@ protected:
 	GLuint vertex_buffer_id;
 	GLuint colour_buffer_id;
 	GLuint normal_buffer_id;
+	GLuint tex_coords_id;
 	GLuint model_uniform_id;
-	GLuint tex_coords_buffer;
-	GLuint index_buffer_id;
+
+	GLuint vertBufferObject;
+	GLuint normalsBufferObject;
+	GLuint coloursBufferObject;
+	GLuint elementBufferObject;
+	GLuint texcoordsBufferObject;
 
 	GLuint texture_id;
 

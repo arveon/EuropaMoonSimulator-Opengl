@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "FeatureGenerator.h"
+#include "UserPrefs.h"
 
 
 class TerrainGenerator
@@ -47,11 +48,12 @@ private:
 	void calculate_normals_sphere(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution);
 public:
 	Terrain* create_terrain(int xpoints, int zpoints, float x_world, float z_world, GLuint perlin_freq, GLuint scale, GLuint octaves);
-	Sphere* create_terrain_on_sphere(Shader shader, int numlats, int numlongs, GLuint tex = NULL);
+	Sphere* create_terrain_on_sphere(Shader shader, int numlats, int numlongs, UserPrefs prefs, GLuint tex = NULL);
 	void set_texture(GLuint terrain_texture) { this->terrain_texture = terrain_texture; }
 
 	void apply_terrain_feature(std::vector<glm::vec3> feature, glm::vec3 * terrain, glm::vec2 feature_position, glm::vec2 feature_scale, glm::vec2 feature_resolution, glm::vec2 terrain_resolution, float rotation, bool is_crater = false);
 	void apply_terrain_feature_sphere(std::vector<glm::vec3> feature, glm::vec2 scale, glm::vec2 shift, Sphere* sphere, glm::vec2 feature_resolution, int* visited, float rotation_angle = 0);
+	void generate_terrain(Sphere* sphere, UserPrefs prefs);
 	
 	TerrainGenerator();
 	~TerrainGenerator();
