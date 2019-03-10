@@ -103,6 +103,7 @@ void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 
 
 	/* Store the colours in a buffer object */
+
 	glGenBuffers(1, &coloursBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, coloursBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* num_verts * 4, pColours, GL_STATIC_DRAW);

@@ -202,7 +202,6 @@ void GLManager::update(float delta_time)
 	sphere->set_draw_normals(draw_normals);
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 	sphere->rotate(glm::radians(cursor_movement.x), glm::vec3(0, 1, 0));
-	sphere->rotate(glm::radians(-cursor_movement.y), glm::vec3(1, 0, 0));
 
 	//update camera position
 	glm::vec3 campos = camera.get_position();
@@ -366,7 +365,7 @@ void GLManager::scroll_callback(GLFWwindow* window, double xoffset, double yoffs
 void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double ypos)
 {
 	static int prev_xpos = NULL;
-	static int prev_ypos = NULL;
+	//static int prev_ypos = NULL;
 
 	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 	if (state == GLFW_PRESS)
@@ -374,29 +373,28 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 		if (prev_xpos == NULL)
 		{//safeguard against a jump at the first call, when these values aren't set yet (=> equal to 0)
 			prev_xpos = xpos;
-			prev_ypos = ypos;
+			//prev_ypos = ypos;
 		}
 
 		glm::vec2 temp_delta;
 		temp_delta.x = (floor(xpos) - prev_xpos);
-		temp_delta.y = (floor(ypos) - prev_ypos);
+		//temp_delta.y = (floor(ypos) - prev_ypos);
 
 		cursor_movement.x += temp_delta.x / 4;
-		cursor_movement.y += temp_delta.y / 4;
-
+		//cursor_movement.y += temp_delta.y / 4;
 
 		if (cursor_movement.x >= 360)
 			cursor_movement.x = (int)cursor_movement.x % 360;
 		else if (cursor_movement.x < 0)
 			cursor_movement.x = 360 - (int)cursor_movement.x % 360;
 
-		if (cursor_movement.y >= 360)
-			cursor_movement.y = (int)cursor_movement.y % 360;
-		else if (cursor_movement.y < 0)
-			cursor_movement.y = 360 - (int)cursor_movement.y % 360;
+		//if (cursor_movement.y >= 360)
+		//	cursor_movement.y = (int)cursor_movement.y % 360;
+		//else if (cursor_movement.y < 0)
+		//	cursor_movement.y = 360 - (int)cursor_movement.y % 360;
 	}
 	prev_xpos = floor(xpos);
-	prev_ypos = floor(ypos);
+	//prev_ypos = floor(ypos);
 
 }
 
