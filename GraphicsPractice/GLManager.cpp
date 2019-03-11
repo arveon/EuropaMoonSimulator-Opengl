@@ -9,7 +9,7 @@ GLfloat GLManager::aspect_ratio;
 float GLManager::unaffected_time = 0;
 int GLManager::speed = 300;
 
-Camera GLManager::camera;
+CameraController GLManager::camera;
 
 bool GLManager::reset = false;
 bool GLManager::close = false;
@@ -28,7 +28,7 @@ glm::vec3 GLManager::cursor_movement;
 void GLManager::reset_scene()
 {
 	sun.move_to(glm::vec4(0, 0, 0, 1));
-	camera.reset();
+	camera.reset_camera();
 	reset = false;
 	speed = 300;
 }
@@ -131,6 +131,8 @@ void GLManager::init()
 ///Function used to separate the object initialisation logic out
 void GLManager::init_objects()
 {
+	camera.set_mode(CameraController::controlled);
+
 	UserPrefs prefs = Assistant::engage();
 
 	if (prefs.import)
@@ -203,10 +205,6 @@ void GLManager::update(float delta_time)
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
 	sphere->rotate(glm::radians(cursor_movement.x), glm::vec3(0, 1, 0));
 
-	//update camera position
-	glm::vec3 campos = camera.get_position();
-	campos.y += 2;
-
 	//update the lightsource position
 	//sun.move_to(glm::vec4(campos,1));
 
@@ -259,22 +257,6 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 {
 	if (action == GLFW_PRESS)
 	{
-		//camera movement
-		if (key_code == GLFW_KEY_W)
-			camera.set_z_mov(1);
-		else if (key_code == GLFW_KEY_S)
-			camera.set_z_mov(-1);
-
-		if (key_code == GLFW_KEY_A)
-			camera.set_x_mov(1);
-		else if (key_code == GLFW_KEY_D)
-			camera.set_x_mov(-1);
-
-		if (key_code == GLFW_KEY_LEFT_CONTROL)
-			camera.set_y_mov(1);
-		else if (key_code == GLFW_KEY_SPACE)
-			camera.set_y_mov(-1);
-
 		//light movement
 		if (key_code == GLFW_KEY_UP)
 			light_movement.z = -LIGHT_MOVEMENT_SPEED;
@@ -337,23 +319,12 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 	else if (action == GLFW_RELEASE)
 	{
 		//reset variables
-		if (key_code == GLFW_KEY_W || key_code == GLFW_KEY_S)
-			camera.set_z_mov(0);
-		if (key_code == GLFW_KEY_A || key_code == GLFW_KEY_D)
-			camera.set_x_mov(0);
-
-		if (key_code == GLFW_KEY_Q || key_code == GLFW_KEY_E)
-			camera.set_y_rot(0);
-
 		if (key_code == GLFW_KEY_RIGHT || key_code == GLFW_KEY_LEFT)
 			light_movement.x = 0;
 		if (key_code == GLFW_KEY_UP || key_code == GLFW_KEY_DOWN)
 			light_movement.z = 0;
 		if (key_code == GLFW_KEY_KP_ADD || key_code == GLFW_KEY_KP_SUBTRACT)
 			light_movement.y = 0;
-
-		if (key_code == GLFW_KEY_LEFT_CONTROL || key_code == GLFW_KEY_SPACE)
-			camera.set_y_mov(0);
 	}
 }
 

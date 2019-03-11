@@ -38,10 +38,10 @@ Is responsible for loading resources and initialising objects
 
 #include "ParticleSystem.h"
 
-#include "Camera.h"
-
 #include "Assistant.h"
 #include "UserPrefs.h"
+
+#include "CameraController.h"
 
 class GLManager
 {
@@ -70,7 +70,7 @@ private:
 	//control variables
 	bool model_exported;
 	static glm::vec3 cursor_movement;
-	static Camera camera;
+	static CameraController camera;
 	static GLfloat aspect_ratio;
 	static glm::vec3 light_movement;
 	static float unaffected_time;

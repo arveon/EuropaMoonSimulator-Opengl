@@ -22,18 +22,15 @@ private:
 
 	glm::mat4 view_matrix;
 public:
-	void update(float dt, glm::vec3 cursor_deltas);
+	void update(float dt, float cur_distance);
 
 	void set_movement_dir(glm::vec3 movement_dir) { this->movement = movement_dir; }
-	void set_x_mov(int x) { direction.x = x; }
-	void set_y_mov(int y) { direction.y = y; }
-	void set_z_mov(int z) { direction.z = z; }
 
 	void set_x_rot(int x) { rotation_dir.x = x; }
 	void set_y_rot(int y) { rotation_dir.y = y; }
 	void set_z_rot(int z) { rotation_dir.z = z; }
 
-	void reset();
+	void reset(float distance);
 
 	glm::mat4 get_view_matrix() { return view_matrix; }
 	glm::vec3 get_position() { return movement; }
