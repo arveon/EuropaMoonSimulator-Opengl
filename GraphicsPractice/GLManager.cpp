@@ -22,6 +22,8 @@ bool GLManager::draw_normals = false;
 bool GLManager::exporting = false;
 int GLManager::sphere_mode = 0;
 
+const float GLManager::planet_rotation_speed = 0.02f;
+
 glm::vec3 GLManager::cursor_movement;
 
 ///Function used to reset the scene (camera,  sun, time speed)
@@ -203,6 +205,12 @@ void GLManager::update(float delta_time)
 	sphere->set_view_matrix(camera.get_view_matrix());
 	sphere->set_draw_normals(draw_normals);
 	sphere->scale(glm::vec3(10.f, 10.f, 10.f));
+	
+	int state = glfwGetMouseButton(this->win, GLFW_MOUSE_BUTTON_LEFT);
+	static float d = 0;
+	if (state == GLFW_RELEASE)
+		d += (d >= 360) ? int(std::round(d)) % 360 : planet_rotation_speed * delta_time;
+	sphere->rotate(glm::radians(d), glm::vec3(0, 1, 0));
 	sphere->rotate(glm::radians(cursor_movement.x), glm::vec3(0, 1, 0));
 
 	//update the lightsource position
@@ -364,6 +372,7 @@ void GLManager::cursor_moved_callback(GLFWwindow * window, double xpos, double y
 		//else if (cursor_movement.y < 0)
 		//	cursor_movement.y = 360 - (int)cursor_movement.y % 360;
 	}
+
 	prev_xpos = floor(xpos);
 	//prev_ypos = floor(ypos);
 

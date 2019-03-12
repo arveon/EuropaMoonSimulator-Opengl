@@ -69,6 +69,8 @@ private:
 
 	//control variables
 	bool model_exported;
+	
+	static const float planet_rotation_speed;
 	static glm::vec3 cursor_movement;
 	static CameraController camera;
 	static GLfloat aspect_ratio;
@@ -76,6 +78,7 @@ private:
 	static float unaffected_time;
 	static float camera_z;
 	static int sphere_mode;
+	
 
 	//controll toggles
 	static bool reset;
