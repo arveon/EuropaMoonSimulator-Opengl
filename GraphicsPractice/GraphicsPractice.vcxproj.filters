@@ -166,5 +166,8 @@
     <None Include="..\shaders\particle.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\shaders\lit_textured_oren_nayar.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

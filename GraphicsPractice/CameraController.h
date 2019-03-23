@@ -17,7 +17,9 @@ public:
 	const float min_speed = 35.f;
 	const float target_distance = 25.f;
 	float cur_distance;
-	const float start_distance = 80.f;
+	const float start_distance = 100.f;
+	const float max_distance = 130.f;
+	const float min_distance = 15.f;
 
 	Camera camera;
 

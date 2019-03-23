@@ -12,7 +12,7 @@ Most of these were used at different stages of prototyping and aren't used anymo
 #define VALUES_PER_NORMAL 3
 #define NUM_TRIANGLE_VERTS 3
 #define NUM_SQR_VERTS 6
-#define NUM_CUBE_VERTS 8
+#define NUM_CUBE_VERTS 36
 #define NUM_CUBE_INDICES 36
 
 #define NUM_LATS_SPHERE 20
@@ -31,7 +31,7 @@ Most of these were used at different stages of prototyping and aren't used anymo
 #define CAMERA_MOVEMENT_SPEED 10.f
 #define CAMERA_STRAFE_SPEED 10.f
 
-#define LIGHT_MOVEMENT_SPEED 0.01f
+#define LIGHT_MOVEMENT_SPEED 0.1f
 
 #define DRAW_POINTS_MODE 1
 #define DRAW_TRIANGLE_STRIP_MODE 2

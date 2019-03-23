@@ -16,8 +16,14 @@ void Drawable::init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLui
 	this->colours = colours;
 	this->normals = normals;
 	this->num_verts = num_verts;
-	this->num_indices = num_indices;
-	this->indices = indices;
+	draw_by_indices = false;
+
+	if (indices != nullptr && num_indices != NULL)
+	{
+		this->num_indices = num_indices;
+		this->indices = indices;
+		draw_by_indices = true;
+	}
 
 	if (tex_id != NULL && texcoords)
 	{
@@ -43,10 +49,13 @@ void Drawable::load_into_memory()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//load indices into memory
-	glGenBuffers(1, &elementBufferObject);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*num_indices, indices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	if (draw_by_indices)
+	{
+		glGenBuffers(1, &elementBufferObject);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*num_indices, indices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 
 	//load vertex colours into memory
 	if (colours_enabled)
@@ -110,34 +119,40 @@ void Drawable::draw_object(int mode, GLuint winding)
 	glFrontFace(winding);
 	glPointSize(5.f);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-	
-	if (mode == DRAW_TRIANGLE_STRIP_MODE)
+	if (draw_by_indices)
 	{
-		if (is_triangle_strips)
-		{
-			for (int i = 0; i < (num_verts / verts_in_line)-1; i++)
-			{
-				GLuint loc = sizeof(GLuint) * i * verts_in_line * 2;
-				glDrawElements(GL_TRIANGLE_STRIP, verts_in_line * 2, GL_UNSIGNED_INT, (GLvoid*)loc);
-			}
-			
-		}
-		else 
-			mode = DRAW_TRIANGLES_MODE;
-	}
-	//need separate in case triangle strip is not set up
-	if(mode == DRAW_POINTS_MODE)
-		glDrawElements(GL_POINTS, num_indices, GL_UNSIGNED_INT, 0);
-	else if(mode == DRAW_TRIANGLES_MODE)
-		glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
-	/*else if (mode == 3)
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
-	}*/
-		
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
 
+		if (mode == DRAW_TRIANGLE_STRIP_MODE)
+		{
+			if (is_triangle_strips)
+			{
+				for (int i = 0; i < (num_verts / verts_in_line) - 1; i++)
+				{
+					GLuint loc = sizeof(GLuint) * i * verts_in_line * 2;
+					glDrawElements(GL_TRIANGLE_STRIP, verts_in_line * 2, GL_UNSIGNED_INT, (GLvoid*)loc);
+				}
+
+			}
+			else
+				mode = DRAW_TRIANGLES_MODE;
+		}
+		//need separate in case triangle strip is not set up
+		if (mode == DRAW_POINTS_MODE)
+			glDrawElements(GL_POINTS, num_indices, GL_UNSIGNED_INT, 0);
+		else if (mode == DRAW_TRIANGLES_MODE)
+			glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
+		/*else if (mode == 3)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glDrawElements(GL_TRIANGLE_STRIP, num_indices, GL_UNSIGNED_INT, 0);
+		}*/
+
+	}
+	else
+	{
+		glDrawArrays(GL_TRIANGLES, 0, num_verts);
+	}
 
 	//unbind everything
 	if (tex_enabled)

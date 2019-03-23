@@ -175,7 +175,6 @@ void TerrainGenerator::calculate_normals_sphere(glm::vec3 * normals, std::vector
 	//calculating normals for latitudes
 	for (int i = 1; i < resolution.y - 2; i++)
 	{
-		int a, b, c, d;
 		for (int j = 0; j < resolution.x; j++)
 		{
 			int cur_elem = 1 + i * (resolution.x + 1) + j;
@@ -251,7 +250,6 @@ Function used to generate a sphere with terrain on it
 */
 Sphere* TerrainGenerator::create_terrain_on_sphere(Shader shader, int numlats, int numlongs, UserPrefs prefs, GLuint tex)
 {
-
 	//generate the sphere
 	Sphere* sphere = new Sphere(shader, tex);
 	sphere->makeSphere(numlats, numlongs);
@@ -321,7 +319,7 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 
 	/* Apply ridges */
 	//large ridges
-	for (int i = 0; i < prefs.ridge_density / 3; i++)
+	for (int i = 0; i < std::round(prefs.ridge_density / 3); i++)
 	{
 		//scale.x = 0.018f;
 		scale.x = (float)(rand() % 5 + 18) / 1000;

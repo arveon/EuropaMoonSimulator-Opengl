@@ -29,7 +29,7 @@ glm::vec3 GLManager::cursor_movement;
 ///Function used to reset the scene (camera,  sun, time speed)
 void GLManager::reset_scene()
 {
-	sun.move_to(glm::vec4(0, 0, 0, 1));
+	sun.move_to(glm::vec4(20, 0, 0, 1));
 	camera.reset_camera();
 	reset = false;
 	speed = 300;
@@ -78,7 +78,7 @@ void GLManager::init()
 	//load required shaders
 	try
 	{
-		basic_shader = ShaderManager::load_shader("../shaders/lit_textured.vert", "../shaders/lit_textured.frag");
+		basic_shader = ShaderManager::load_shader("../shaders/lit_textured.vert", "../shaders/lit_textured_oren_nayar.frag");
 		basic_shader.init_shader(aspect_ratio, LIT_TEXTURED_SHADER);
 		basic_shader.set_shininess(1);
 
@@ -107,6 +107,10 @@ void GLManager::init()
 		terrain_tex = SOIL_load_OGL_texture("..\\textures\\ice.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
 		if (terrain_tex == 0)
+			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
+
+		skybox_tex = SOIL_load_OGL_texture("..\\textures\\ice.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		if (skybox_tex == 0)
 			std::cerr << "Error loading texture: " << SOIL_last_result() << std::endl;
 
 		int loc = glGetUniformLocation(basic_shader.get_program_id(), "tex");
@@ -158,10 +162,11 @@ void GLManager::init_objects()
 	//initialise shaders
 	basic_shader.set_shininess(8.f);
 
-	//initialise lightsource
-	/*sun = Lightsource(lightsource_shader);
-	sun.set_scale(glm::vec3( .3f, .3f, .3f));*/
+	cube = new Cube();
+	cube->init(unlit_texture_shader, skybox_tex);
+	cube->set_triangle_winding(GL_CCW);
 
+	sun = Lightsource(lightsource_shader);
 
 	GLManager::print_controls();
 }
@@ -190,11 +195,10 @@ void GLManager::loop()
 void GLManager::update(float delta_time)
 {
 	camera.update(unaffected_time, cursor_movement);
-	//cursor_movement = glm::vec2(0);//reset cursor delta movement every tick
 	cursor_movement.z = 0;
 
 	//set projection matrix in all shaders
-	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 200.f);
+	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 300.f);
 	basic_shader.set_projection_matrix(projection);
 	lightsource_shader.set_projection_matrix(projection);
 	particle_shader.set_projection_matrix(projection);
@@ -213,10 +217,12 @@ void GLManager::update(float delta_time)
 	sphere->rotate(glm::radians(d), glm::vec3(0, 1, 0));
 	sphere->rotate(glm::radians(cursor_movement.x), glm::vec3(0, 1, 0));
 
-	//update the lightsource position
-	//sun.move_to(glm::vec4(campos,1));
+	cube->set_view_matrix(camera.get_view_matrix());
+	cube->scale(glm::vec3(150, 150, 150));
 
 	//set the light position in shader
+	sun.set_view_matrix(camera.get_view_matrix());
+	sun.shift(glm::vec3(light_movement.x, light_movement.y, light_movement.z));
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
 
 
@@ -241,8 +247,10 @@ void GLManager::update(float delta_time)
 void GLManager::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//sun.draw();
+	
 	sphere->drawSphere(sphere_mode);
+	sun.draw();
+	cube->draw();
 }
 
 void GLManager::terminate()
@@ -267,13 +275,13 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 	{
 		//light movement
 		if (key_code == GLFW_KEY_UP)
-			light_movement.z = -LIGHT_MOVEMENT_SPEED;
-		else if (key_code == GLFW_KEY_DOWN)
 			light_movement.z = LIGHT_MOVEMENT_SPEED;
+		else if (key_code == GLFW_KEY_DOWN)
+			light_movement.z = -LIGHT_MOVEMENT_SPEED;
 		if (key_code == GLFW_KEY_RIGHT)
-			light_movement.x = LIGHT_MOVEMENT_SPEED;
-		else if (key_code == GLFW_KEY_LEFT)
 			light_movement.x = -LIGHT_MOVEMENT_SPEED;
+		else if (key_code == GLFW_KEY_LEFT)
+			light_movement.x = LIGHT_MOVEMENT_SPEED;
 		if (key_code == GLFW_KEY_KP_ADD)
 			light_movement.y = LIGHT_MOVEMENT_SPEED;
 		else if (key_code == GLFW_KEY_KP_SUBTRACT)

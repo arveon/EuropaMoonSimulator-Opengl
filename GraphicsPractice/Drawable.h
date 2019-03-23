@@ -13,6 +13,7 @@ Class represents a base for any object that can be drawn
 
 class Drawable
 {
+	friend class ObjectLoader;
 protected:
 	GLuint vertex_buffer_id;
 	GLuint colour_buffer_id;
@@ -47,6 +48,7 @@ protected:
 
 	bool draw_normals;
 	bool is_triangle_strips;
+	bool draw_by_indices;
 
 	int verts_in_line = 0;
 
@@ -57,7 +59,7 @@ protected:
 public:
 	Drawable() {};
 	~Drawable();
-	virtual void init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
+	virtual void init(glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices = nullptr, int num_indices = NULL, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
 	virtual void init(Shader shader_program, glm::vec3* vertices, int num_verts, glm::vec4* colours, GLuint* indices, int num_indices, glm::vec3* normals = nullptr, glm::vec2* texcoords = nullptr, int tex_id = NULL);
 	void set_triangle_strip(int verts_in_line) { is_triangle_strips = true; this->verts_in_line = verts_in_line; };
 
@@ -65,6 +67,8 @@ public:
 
 	void set_draw_normals(bool value) { this->draw_normals = value; }
 	void set_normal_shader(Shader normal_shader) { this->normals_shader = normal_shader; }
+
+	void set_texture(GLuint tex_id) { texture_id = tex_id; tex_enabled = true; }
 	
 	bool tex_enabled;
 	bool normals_enabled;

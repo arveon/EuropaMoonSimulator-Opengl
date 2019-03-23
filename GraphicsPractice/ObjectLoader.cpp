@@ -5,7 +5,7 @@
 
 
 
-Drawable * ObjectLoader::load_object(std::string obj_path)
+Drawable * ObjectLoader::load_object(std::string obj_path, Shader shader, GLuint tex_id)
 {
 	std::cerr << "Loading obj: " << obj_path << std::endl;
 	Drawable* res = new Drawable();
@@ -24,9 +24,9 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	std::string error, warning;
 	bool ret = tinyobj::LoadObj(&obj, &shapes, &materials, &warning, &error, obj_path.c_str());
 	if (!error.empty()) 
-		std::cerr << error << std::endl;
+		std::cout << error << std::endl;
 	if (!warning.empty())
-		std::cerr << warning << std::endl;
+		std::cout << warning << std::endl;
 
 	
 	num_verts = obj.vertices.size() / 3;
@@ -77,6 +77,7 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 	}
 	else
 	{
+		res->texture_id = tex_id;
 		texcoords = new glm::vec2[obj.texcoords.size()];
 		int counter = 0;
 		for (unsigned int i = 0; i < obj.texcoords.size(); i += 2)
@@ -108,7 +109,7 @@ Drawable * ObjectLoader::load_object(std::string obj_path)
 
 	int num_indices;
 	parse_indices(shapes, &indices, &num_indices);
-	res->init(vertices, obj.vertices.size(), colors, indices, num_indices, normals, texcoords);
+	res->init(shader, vertices, obj.vertices.size(), colors, indices, num_indices, normals, texcoords);
 	return res;
 }
 
@@ -222,8 +223,6 @@ Sphere * ObjectLoader::load_object_sphere(std::string obj_path, Shader shader)
 	}
 
 	int num_indices;
-	/*parse_indices(shapes, &indices, &num_indices);
-	res->init(vertices, obj.vertices.size(), colors, indices, num_indices, normals, texcoords);*/
 
 	res->gen_buffers();
 	res->colours_enabled = false;

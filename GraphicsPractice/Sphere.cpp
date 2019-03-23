@@ -63,7 +63,6 @@ Sphere::~Sphere()
 /* This version uses indexed vertex buffers for both the fans at the poles and the latitude strips */
 void Sphere::makeSphere(GLuint numlats, GLuint numlongs)
 {
-	GLuint i;
 	/* Calculate the number of vertices required in sphere */
 	this->num_verts = 2 + ((numlats - 2) * (numlongs+1));
 	this->numlats = numlats;

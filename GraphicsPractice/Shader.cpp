@@ -17,6 +17,14 @@ void Shader::init_shader(GLfloat aspect_ratio, int type)
 	glm::mat4 projection = glm::perspective(glm::radians(60.f), aspect_ratio, 0.1f, 100.f);
 	glUniformMatrix4fv(projection_uniform_id, 1, GL_FALSE, &projection[0][0]);
 
+	texture_enabled_uniform_id = glGetUniformLocation(program, "texture_enabled");
+	glUniform1i(texture_enabled_uniform_id, false);
+
+	//allocate view matrix
+	view_uniform_id = glGetUniformLocation(program, "view");
+	glm::mat4 view = glm::mat4(1.f);
+	glUniformMatrix4fv(view_uniform_id, 1, GL_FALSE, &view[0][0]);
+
 	if (type == LIT_TEXTURED_SHADER)
 	{
 		//allocate shininess uniform and set to 10
@@ -27,14 +35,6 @@ void Shader::init_shader(GLfloat aspect_ratio, int type)
 		light_position_uniform_id = glGetUniformLocation(program, "light_position");	
 		glm::vec4 pos = glm::vec4(0, 0, 0, 1);
 		glUniform4fv(light_position_uniform_id, 1, &pos[0]);
-
-		//allocate view matrix
-		view_uniform_id = glGetUniformLocation(program, "view");
-		glm::mat4 model = glm::mat4(1.f);
-		glUniformMatrix4fv(view_uniform_id, 1, GL_FALSE, &model[0][0]);
-
-		texture_enabled_uniform_id = glGetUniformLocation(program, "texture_enabled");
-		glUniform1i(texture_enabled_uniform_id, false);
 
 		colour_enabled_uniform_id = glGetUniformLocation(program, "colour_enabled");
 		glUniform1i(texture_enabled_uniform_id, false);

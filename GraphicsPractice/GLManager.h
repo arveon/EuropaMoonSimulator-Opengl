@@ -61,7 +61,8 @@ private:
 	GLuint skybox_tex;
 
 	//objects in the scene
-	Cube* skybox;
+	Drawable* skybox;
+	Cube* cube;
 	Lightsource sun;
 	Sphere* sphere;
 

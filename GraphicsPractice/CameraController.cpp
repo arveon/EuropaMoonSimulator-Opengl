@@ -28,6 +28,11 @@ void CameraController::update(float dt, glm::vec3 cursor_deltas)
 			cur_distance = target_distance;
 		}
 	}
+
+	//make sure only max and min are there
+	cur_distance = (cur_distance > max_distance) ? max_distance : cur_distance;
+	cur_distance = (cur_distance < min_distance) ? min_distance : cur_distance;
+
 }
 
 CameraController::CameraController()
