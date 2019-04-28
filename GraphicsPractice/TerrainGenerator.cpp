@@ -7,101 +7,11 @@ has methods for generating a sphere object with terrain placed on top and a flat
 
 #include "TerrainGenerator.h"
 
-GLfloat * TerrainGenerator::calculate_noise(GLuint x_size, GLuint z_size, GLuint octaves, GLuint frequency, GLuint scl)
-{
-	GLuint num_verts = x_size * z_size;
-	GLfloat* noise = new GLfloat[num_verts * octaves];
-	for (GLuint i = 0; i < num_verts*octaves; i++)
-		noise[i] = 0;
-
-	//the amount noise will be moved per unit
-	GLfloat xfactor = 1.f / (x_size - 1);
-	GLfloat zfactor = 1.f / (z_size - 1);
-
-	for (GLuint row = 0; row < z_size; row++)
-	{
-		for (GLuint col = 0; col < x_size; col++)
-		{
-			//get coords of where noise will be sampled
-			GLfloat x = xfactor * col;
-			GLfloat z = zfactor * row;
-
-			GLfloat sum = 0;
-			GLfloat cur_scale = scl;
-			GLfloat cur_freq = frequency;
-
-			//sum for each octave
-			for (GLuint oct = 0; oct < octaves; oct++)
-			{
-				glm::vec2 point(x*cur_freq, z*cur_freq);
-				GLfloat val = glm::perlin(point) / cur_scale;
-				sum += val;
-
-				GLfloat res = (sum + 1.f) / 2.f;//make sure sum value is always between 0 and 1
-				noise[(row*x_size + col)*octaves + oct] = res;
-
-				cur_freq *= 2.f;
-				cur_scale *= scl;
-			}
-		}
-	}
-
-	return noise;
-}
-
-/*
-Function used to make sure the height of all the points is between min and max
-*/
-void TerrainGenerator::scale_heights(int min, int max, glm::vec3* verts, int num_verts)
-{
-	GLfloat cmin, cmax;
-	cmin = cmax = verts[0].y;
-
-	//find min and max in current scale
-	for (int i = 0; i < num_verts; i++)
-	{
-		if (verts[i].y < cmin) cmin = verts[i].y;
-		if (verts[i].y > cmax) cmax = verts[i].y;
-	}
-
-	GLfloat stretch_factor = (max - min) / (cmax - cmin);//desired range / current range
-	GLfloat min_diff = cmin - min;
-	for (int i = 0; i < num_verts; i++)
-	{
-		verts[i].y = (verts[i].y - min_diff) * stretch_factor;
-	}
-}
-
-/*
-Function used to make sure the colour of all the points is between min and max
-*/
-void TerrainGenerator::scale_colours(int min, int max, glm::vec4* colours, int num_verts)
-{
-	GLfloat cmin, cmax;
-	cmin = cmax = colours[0].y;
-
-	//find min and max in current scale
-	for (int i = 0; i < num_verts; i++)
-	{
-		if (colours[i].y < cmin) cmin = colours[i].y;
-		if (colours[i].y > cmax) cmax = colours[i].y;
-	}
-
-	GLfloat stretch_factor = (max - min) / (cmax - cmin);//desired range / current range
-	GLfloat min_diff = cmin - min;
-	for (int i = 0; i < num_verts; i++)
-	{
-		colours[i].y = (colours[i].y - min_diff) * stretch_factor;
-		colours[i].x = colours[i].z = colours[i].y;
-	}
-}
-
 /*
 Function used to calculate normals for all verts in a flat DEM
 */
 void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution)
 {
-	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 	GLuint element_pos = 0;
 	glm::vec3 AB, AC, cross_product;
 
@@ -128,11 +38,6 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 			normals[v2] += cross_product;
 			normals[v3] += cross_product;
 
-			/*if (v1 == 19 || v2 == 19 || v3 == 19)
-			{
-				std::cerr << v1 << " " << v2 << " " << v3 << std::endl;
-				std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
-			}*/
 
 			// Move on to the next vertex along the strip
 			element_pos++;
@@ -147,8 +52,6 @@ void TerrainGenerator::calculate_normals(glm::vec3 * normals, std::vector<GLuint
 		normals[v] = glm::normalize(normals[v]);
 	}
 
-
-	//std::cerr << "19n: " << normals[19].x << " " << normals[19].y << " " << normals[19].z << std::endl;
 }
 
 /*
@@ -270,13 +173,13 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	for (int i = 0; i < sphere->num_verts; i++)
 		visited[i] = 0;
 
-	//generate the features that will be replicated across the surface
-	glm::vec2 resolution(1000, 1000);
-	std::vector<glm::vec3> big_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.015f, .97f, 0.45f);
-	std::vector<glm::vec3> medium_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.011f, .98f, 0.45f);
-	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge_sphere(resolution, 1.007f, .99f, 0.35f);
-	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.99f, .5f);
-	std::vector<glm::vec3> dome = FeatureGenerator::generate_crater(resolution, 1.01f, .5f);
+	////generate the features that will be replicated across the surface
+	glm::vec2 resolution(sphere->numlats/2, sphere->numlongs/2);
+	std::vector<glm::vec3> big_ridge = FeatureGenerator::generate_ridge(resolution, 1.005f, .99f, 0.35f);
+	std::vector<glm::vec3> medium_ridge = FeatureGenerator::generate_ridge(resolution, 1.014f, .993f, 0.35f);
+	std::vector<glm::vec3> tiny_ridge = FeatureGenerator::generate_ridge(resolution, 1.003f, .995f, 0.35f);
+	std::vector<glm::vec3> crater = FeatureGenerator::generate_crater(resolution, 0.996f, .5f);
+	std::vector<glm::vec3> dome = FeatureGenerator::generate_crater(resolution, 1.005f, .5f);
 
 	//replicate the features across surface
 	int maxid = 0;
@@ -297,7 +200,7 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	/* Apply domes */
 	for (int i = 0; i < prefs.dome_density * 2; i++)
 	{
-		scale.x = (float)(rand() % 9 + 4) / 1000;
+		scale.x = (float)(rand() % 5 + 2) / 1000;
 		scale.y = scale.x * 2;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % (int)((num_lats / 5) * 3) + (int)(num_lats / 5);
@@ -308,7 +211,7 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	/* Apply large craters */
 	for (int i = 0; i < prefs.crater_density * 2 / 3; i++)
 	{
-		scale.x = (float)(rand() % 6 + 8) / 1000;
+		scale.x = (float)(rand() % 3 + 4) / 1000;
 		scale.y = scale.x * 2;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % (int)((num_lats / 5) * 3) + (int)(num_lats / 5);
@@ -322,8 +225,8 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	for (int i = 0; i < std::round(prefs.ridge_density / 3); i++)
 	{
 		//scale.x = 0.018f;
-		scale.x = (float)(rand() % 5 + 18) / 1000;
-		scale.y = (float)(rand() % 7 + 25) / 100;
+		scale.x = (float)(rand() % 2 + 6) / 1000;
+		scale.y = (float)(rand() % 4 + 20) / 100;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % (int)(num_lats / 3) + (int)(num_lats / 3);
 		angle = rand() % 180;
@@ -332,13 +235,10 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	}
 
 	//medium ridges
-	scale.x = 0.015f;
-	scale.y = 0.2;
-	shift.x -= 5;
 	for (int i = 0; i < prefs.ridge_density; i++)
 	{
-		scale.x = (float)(rand() % 6 + 13) / 1000;
-		scale.y = (float)(rand() % 8 + 18) / 100;
+		scale.x = (float)(rand() % 2 + 4) / 1000;
+		scale.y = (float)(rand() % 5 + 10) / 100;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % num_lats;
 		angle = rand() % 180;
@@ -357,12 +257,10 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	}
 
 	//small ridges
-	/*scale.x = .01f;
-	scale.y = .1f;*/
 	for (int i = 0; i < prefs.ridge_density; i++)
 	{
-		scale.x = (float)(rand() % 4 + 9) / 1000;
-		scale.y = (float)(rand() % 4 + 10) / 100;
+		scale.x = (float)(rand() % 3 + 3) / 1000;
+		scale.y = (float)(rand() % 3 + 6) / 100;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % num_lats;
 		angle = rand() % 180;
@@ -383,12 +281,10 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 	}
 
 	//singular tiny ridges
-	scale.x = .005f;
-	scale.y = .05f;
 	for (int i = 0; i < prefs.ridge_density * 10; i++)
 	{
-		scale.x = (float)(rand() % 4 + 9) / 1000;
-		scale.y = (float)(rand() % 6 + 4) / 100;
+		scale.x = (float)(rand() % 3 + 2) / 1000;
+		scale.y = (float)(rand() % 4 + 3) / 100;
 		shift.x = rand() % num_longs;
 		shift.y = rand() % num_lats;
 		angle = rand() % 180;
@@ -408,6 +304,7 @@ void TerrainGenerator::generate_terrain(Sphere* sphere, UserPrefs prefs)
 		std::cout << "small ridge: " << i + 1 << "/" << prefs.ridge_density * 10 << std::endl;
 	}
 	std::cout << "generation finished" << std::endl;
+
 
 	delete visited;
 

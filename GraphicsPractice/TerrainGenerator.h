@@ -38,11 +38,6 @@ private:
 
 	Drawable* terrain;
 	GLuint terrain_texture;
-
-	static GLfloat* calculate_noise(GLuint x_size, GLuint z_size, GLuint octaves, GLuint freq, GLuint scale);
-
-	void scale_heights(int min, int max, glm::vec3* verts, int num_verts);
-	void scale_colours(int min, int max, glm::vec4* colours, int num_verts);
 	
 	void calculate_normals(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution);
 	void calculate_normals_sphere(glm::vec3 * normals, std::vector<GLuint>* elements, glm::vec3* verts, glm::vec2 resolution);

@@ -151,7 +151,8 @@ void GLManager::init_objects()
 	}
 	else if (!prefs.import)
 	{
-		sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 1000, 1000, prefs, terrain_tex);
+		sphere = terrain_gen.create_terrain_on_sphere(basic_shader, 100, 100, prefs, terrain_tex);
+		//ObjectLoader::write_sphere(*sphere, "backup.obj");
 		model_exported = false;
 	}
 
@@ -225,6 +226,8 @@ void GLManager::update(float delta_time)
 	sun.shift(glm::vec3(light_movement.x, light_movement.y, light_movement.z));
 	basic_shader.set_light_position(camera.get_view_matrix()*sun.get_position());
 
+	std::cout << sun.get_position().y << std::endl;
+
 
 	//apply scene changes if specific flags were set
 	if (reset)
@@ -236,7 +239,7 @@ void GLManager::update(float delta_time)
 
 	if (exporting && !model_exported)
 	{
-		ObjectLoader::write_sphere(*sphere);
+		ObjectLoader::write_sphere(*sphere,"model.obj");
 		exporting = false;
 	}
 	else if (exporting && model_exported)
@@ -327,6 +330,10 @@ void GLManager::key_callback(GLFWwindow* window, int key_code, int scancode, int
 		//toggle texture
 		if (key_code == GLFW_KEY_T)
 			texture_enabled = !texture_enabled;
+
+		//sphere draw mode
+		if (key_code == GLFW_KEY_M)
+			sphere_mode = (sphere_mode >= 2) ? 0 : sphere_mode++;
 
 		//export model
 		if (key_code == GLFW_KEY_E)

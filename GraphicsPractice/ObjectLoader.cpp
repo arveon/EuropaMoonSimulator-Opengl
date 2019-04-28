@@ -122,7 +122,7 @@ Sphere * ObjectLoader::load_object_sphere(std::string obj_path, Shader shader)
 	std::vector<tinyobj::material_t> materials;
 	int num_verts, num_normals, num_tex_coords, num_colours = 0;
 
-	glm::vec4 *colors = nullptr;
+	glm::vec3 *colors = nullptr;
 	glm::vec3 *vertices, *normals;
 	glm::vec2 *texcoords = nullptr;
 	vertices = normals = nullptr;
@@ -204,26 +204,6 @@ Sphere * ObjectLoader::load_object_sphere(std::string obj_path, Shader shader)
 		res->tex_enabled = true;
 	}
 
-	if (num_colours <= 0)
-	{
-		std::cout << "No colours." << std::endl;
-		res->tex_enabled = false;
-	}
-	else
-	{
-		colors = new glm::vec4[obj.colors.size()];
-		counter = 0;
-		for (unsigned int i = 0; i < obj.colors.size() - 3; i += 4)
-		{
-			colors[counter] = glm::vec4(obj.colors[i], obj.colors[i + 1], obj.colors[i + 2], obj.colors[i + 3]);
-			counter++;
-		}
-		res->colours_enabled = true;
-		//std::copy(obj.colors.begin(), obj.colors.end(), colors);
-	}
-
-	int num_indices;
-
 	res->gen_buffers();
 	res->colours_enabled = false;
 	res->set_normals(normals);
@@ -263,14 +243,14 @@ void ObjectLoader::parse_indices(std::vector<tinyobj::shape_t> shapes, GLuint** 
 	*ind = indices;
 }
 
-void ObjectLoader::write_sphere(Sphere sp)
+void ObjectLoader::write_sphere(Sphere sp, std::string name)
 {
 	std::cout << "Writing the model..." << std::endl;
 
 	//create file
 	//write first part
 	std::ofstream file;
-	file.open("model.obj");
+	file.open(name);
 	file << "# model.obj" << std::endl << "o europa" << std::endl << std::endl;
 
 	//write verts

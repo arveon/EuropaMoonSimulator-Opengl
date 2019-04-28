@@ -154,8 +154,6 @@ void Sphere::produce_indices()
 			indices[index++] = row_start + j;
 			indices[index++] = row_start + j + (numlongs + 1);
 		}
-		//indices[index++] = row_start;
-		//indices[index++] = row_start + numlongs;
 	}
 
 	// Define indices for the last triangle fan for the north pole region
@@ -163,9 +161,6 @@ void Sphere::produce_indices()
 	{//start from final vert (center of triangle fan for last pole) and add indexes for lower
 		indices[index++] = i;
 	}
-	////indices[index++] = num_verts - 2;
-	/*for (int i = 0; i < num_indices; i++)
-		std::cout << "i: " << i << " " << indices[i] << std::endl;*/
 	std::cout << "num indices: " << index << std::endl;
 
 	// Generate a buffer for the indices

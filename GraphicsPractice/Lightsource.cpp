@@ -8,7 +8,7 @@ Lightsource::Lightsource(Shader light_shader)
 {
 	sphere = Sphere(light_shader);
 	sphere.makeSphere(20, 20);
-	light_position = glm::vec4(-5, 0, -20, 1);
+	light_position = glm::vec4(-5, 10, -20, 1);
 	scale = glm::vec3(0.1, 0.1, 0.1);
 	sphere.normals_enabled = false;
 	sphere.set_draw_normals(false);

@@ -16,7 +16,7 @@
 class ObjectLoader
 {
 public:
-	static void write_sphere(Sphere sp);
+	static void write_sphere(Sphere sp, std::string name);
 	static Drawable* load_object(std::string obj_path, Shader shader, GLuint tex_id = NULL);
 	static Sphere* load_object_sphere(std::string obj_path, Shader shader);
 	static void parse_indices(std::vector<tinyobj::shape_t> shapes, GLuint ** indices, int * num_indices);
